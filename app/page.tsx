@@ -1,65 +1,281 @@
+import Link from "next/link";
 import Image from "next/image";
+import { Building2, Users, ShieldCheck, Phone, Mail, Instagram, MapPin, ArrowRight, UserPlus, GraduationCap } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { mockListings } from "@/data/mockData";
+import ListingCard from "@/components/ListingCard";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+
+      {/* Hero Section */}
+      <section id="hero" className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-right">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-primary text-xs font-bold mb-6 border border-orange-500/20">
+                <GraduationCap size={14} />
+                <span>المنصة المعتمدة لطلاب جامعة النجاح الوطنية - نابلس</span>
+              </div>
+              <h1 className="text-4xl lg:text-7xl font-black leading-tight mb-6 text-white">
+                استأجر سكنك في <br />
+                <span className="text-gradient">نابلس</span> بضغطة زر
+              </h1>
+              <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto lg:mr-0 leading-relaxed">
+                سكني هي أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة لطلاب جامعة النجاح. نوفر لك خيارات متنوعة بالقرب من الحرم الجديد، الحرم القديم، والأكاديمية.
+              </p>
+              <div className="flex flex-col sm:row gap-4 justify-center lg:justify-start">
+                <Link href="/students" className="bg-premium-gradient text-white px-8 py-4 rounded-xl text-lg font-black shadow-2xl shadow-primary/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                  تصفح السكنات المتاحة
+                  <ArrowRight size={20} />
+                </Link>
+                <Link href="/admin" className="bg-white/5 border border-white/10 text-white px-8 py-4 rounded-xl text-lg font-black hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                  عرض عقارك للطلاب
+                  <UserPlus size={20} />
+                </Link>
+              </div>
+              
+              <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 opacity-60 text-slate-300">
+                <div className="flex flex-col items-center lg:items-end">
+                  <span className="text-2xl font-bold">500+</span>
+                  <span className="text-xs uppercase tracking-tighter">طالب نجاح</span>
+                </div>
+                <div className="w-px h-8 bg-white/10"></div>
+                <div className="flex flex-col items-center lg:items-end">
+                  <span className="text-2xl font-bold">120+</span>
+                  <span className="text-xs uppercase tracking-tighter">عقار في نابلس</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative lg:h-[650px] h-[400px] rounded-[3rem] overflow-hidden shadow-2xl border border-white/5">
+              <Image 
+                src="/images/hero.png" 
+                alt="Modern Student Housing in Nablus" 
+                fill 
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
+              <div className="absolute bottom-8 right-8 left-8 glass p-8 rounded-3xl border border-white/10">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/40">
+                    <ShieldCheck size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">سكنات موثقة 100%</h3>
+                    <p className="text-sm text-slate-400">فريقنا يقوم بمعاينة كل سكن في نابلس قبل عرضه</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Categories Section */}
+      <section id="categories" className="py-20 lg:py-32 bg-slate-950/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16 lg:mb-20">
+            <h2 className="text-4xl lg:text-6xl font-black mb-6 text-white tracking-tight">أقسام السكن في <span className="text-gradient underline decoration-primary/20 underline-offset-8">نابلس</span></h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg px-4">
+              سواء كنت تدرس في الحرم الجديد أو القديم، سكني توفر لك المسكن الأقرب لكليتك بأسعار منافسة وبالشيكل.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-10 px-4 sm:px-0">
+            {/* Men's Housing */}
+            <div className="group relative rounded-[3rem] overflow-hidden border border-white/5 bg-slate-900/50 hover:bg-slate-900 hover:border-primary/30 transition-all duration-500 p-2">
+              <div className="h-80 relative overflow-hidden rounded-[2.5rem]">
+                <div className="absolute top-6 left-6 z-20 bg-orange-600 text-white px-5 py-2 rounded-xl text-sm font-black shadow-2xl flex items-center gap-2">
+                  <Users size={16} />
+                  سكن الشباب
+                </div>
+                <Image src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800" alt="سكن طلاب نابلس" fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
+              </div>
+              <div className="p-8">
+                <h3 className="text-3xl font-black mb-4 text-white">طلاب جامعة النجاح</h3>
+                <p className="text-slate-400 mb-8 leading-relaxed">
+                  سكنات بالقرب من الحرم الجديد (شارع تونس والأكاديمية) والحرم القديم، بخدمات متنوعة وتجهيزات كاملة.
+                </p>
+                <Link href="/students" className="w-full flex items-center justify-between p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-primary hover:border-primary transition-all text-white font-black text-lg group/btn">
+                  عرض السكنات المتاحة
+                  <ArrowRight size={24} className="group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Women's Housing */}
+            <div className="group relative rounded-[3rem] overflow-hidden border border-white/5 bg-slate-900/50 hover:bg-slate-900 hover:border-pink-500/30 transition-all duration-500 p-2">
+              <div className="h-80 relative overflow-hidden rounded-[2.5rem]">
+                <div className="absolute top-6 left-6 z-20 bg-pink-600 text-white px-5 py-2 rounded-xl text-sm font-black shadow-2xl flex items-center gap-2">
+                  <Users size={16} />
+                  سكن الطالبات
+                </div>
+                <Image src="https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&q=80&w=800" alt="سكن طالبات نابلس" fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
+              </div>
+              <div className="p-8">
+                <h3 className="text-3xl font-black mb-4 text-white">طالبات جامعة النجاح</h3>
+                <p className="text-slate-400 mb-8 leading-relaxed">
+                  بيئة آمنة في أرقى مناطق نابلس (رفيديا والمخفية)، نوفر لك الخصوصية التامة مع خدمات النقل والصيانة.
+                </p>
+                <Link href="/studentesses" className="w-full flex items-center justify-between p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-pink-600 hover:border-pink-600 transition-all text-white font-black text-lg group/btn">
+                  عرض السكنات المتاحة
+                  <ArrowRight size={24} className="group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Featured Listings Section */}
+      <section id="featured" className="py-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="text-right">
+              <h2 className="text-4xl lg:text-5xl font-black text-white mb-4 tracking-tight">أحدث <span className="text-gradient">السكنات</span> المضافة</h2>
+              <p className="text-slate-500 font-bold">استعرض مجموعة من أفضل الخيارات المتاحة حالياً في مدينة نابلس</p>
+            </div>
+            <Link href="/students" className="group flex items-center gap-3 text-orange-500 font-black text-lg hover:text-orange-400 transition-colors">
+              عرض الكل
+              <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {mockListings.filter(l => !l.isPending).slice(0, 3).map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Property Owner Section - RESTORED */}
+      <section id="owner-contact" className="py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary/5 -skew-y-3 origin-right"></div>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 relative z-10">
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-[4rem] p-10 md:p-20 shadow-2xl overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all duration-700"></div>
+            
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-black mb-8 border border-primary/20">
+                  <Building2 size={16} />
+                  <span>خاص بأصحاب العقارات في نابلس</span>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-black text-white mb-8 leading-tight">
+                  هل تملك عقاراً وتريد <span className="text-gradient">تأجيره؟</span>
+                </h2>
+                <p className="text-slate-400 text-lg md:text-xl leading-relaxed mb-12 font-bold">
+                  انضم لأكبر منصة سكن طلابي في نابلس. نحن نربطك مباشرة بآلاف الطلاب من جامعة النجاح ونقوم بتسويق عقارك بأفضل صورة احترافية.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-5">
+                  <Link 
+                    href="https://wa.me/970590000000" 
+                    className="bg-premium-gradient text-white px-10 py-5 rounded-2xl font-black text-xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 text-center"
+                  >
+                    عرض سكنك الآن
+                    <ArrowRight size={24} />
+                  </Link>
+                  <Link 
+                    href="/admin" 
+                    className="bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 text-center"
+                  >
+                    دخول لوحة التحكم
+                  </Link>
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] hover:border-primary/30 transition-all">
+                      <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary mb-4">
+                        <Users size={24} />
+                      </div>
+                      <h4 className="text-white font-black text-lg mb-2">جمهورك جاهز</h4>
+                      <p className="text-slate-500 text-sm font-bold leading-relaxed">آلاف الطلاب يبحثون يومياً عن سكنات جامعة النجاح</p>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] hover:border-primary/30 transition-all sm:translate-x-4">
+                      <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary mb-4">
+                        <ShieldCheck size={24} />
+                      </div>
+                      <h4 className="text-white font-black text-lg mb-2">إدارة احترافية</h4>
+                      <p className="text-slate-500 text-sm font-bold leading-relaxed">تحكم كامل في صور ومواصفات وأسعار عقاراتك</p>
+                    </div>
+                  </div>
+                  <div className="space-y-6 mt-12">
+                     <div className="bg-premium-gradient p-8 rounded-[2.5rem] shadow-2xl">
+                        <h4 className="text-white font-black text-3xl mb-2">100%</h4>
+                        <p className="text-white/80 text-sm font-black uppercase tracking-tighter">نسبة إشغال سنوية</p>
+                     </div>
+                     <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] hover:border-primary/30 transition-all sm:-translate-x-4">
+                      <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary mb-4">
+                        <Building2 size={24} />
+                      </div>
+                      <h4 className="text-white font-black text-lg mb-2">توثيق العقار</h4>
+                      <p className="text-slate-500 text-sm font-bold leading-relaxed">نقوم بمعاينة عقارك وتجهيزه للتصوير والعرض</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-black py-24 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-16 mb-20">
+            <div className="col-span-2">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="bg-primary p-2.5 rounded-xl text-white">
+                  <Building2 size={32} />
+                </div>
+                <span className="text-3xl font-black text-white">سكني</span>
+              </div>
+              <p className="text-slate-500 max-w-sm mb-10 leading-relaxed text-lg">
+                منصة فلسطينية رائدة تهدف لتسهيل حياة الطلاب الدراسية في مدينة نابلس من خلال توفير سكنات تليق بهم.
+              </p>
+              <div className="flex gap-4">
+                {[Instagram, Phone, Mail].map((Icon, idx) => (
+                  <Link key={idx} href="#" className="w-12 h-12 rounded-xl bg-white/5 text-slate-400 flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                    <Icon size={22} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-bold mb-8 text-white uppercase tracking-wider">جامعة النجاح</h4>
+              <ul className="space-y-4">
+                <li><Link href="#" className="text-slate-500 hover:text-primary transition-colors font-bold">الحرم الجديد</Link></li>
+                <li><Link href="#" className="text-slate-500 hover:text-primary transition-colors font-bold">الحرم القديم</Link></li>
+                <li><Link href="#" className="text-slate-500 hover:text-primary transition-colors font-bold">المجمع الطبي</Link></li>
+                <li><Link href="#" className="text-slate-500 hover:text-primary transition-colors font-bold">الأكاديمية</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-bold mb-8 text-white uppercase tracking-wider">تواصل معنا</h4>
+              <ul className="space-y-6 text-slate-500">
+                <li className="flex items-center gap-4 font-bold text-sm"><MapPin size={20} className="text-primary" /> فلسطين، نابلس، شارع رفيديا الرئيسي</li>
+                <li className="flex items-center gap-4 font-bold text-sm"><Phone size={20} className="text-primary" /> 9720595537190</li>
+                <li className="flex items-center gap-4 font-bold text-sm"><Mail size={20} className="text-primary" /> ammar.shtayeh@gmail.com</li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-10 border-t border-white/5 text-center text-sm text-slate-600 font-bold">
+            <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة سكني وصاحبها عمار اشتية  - نابلس، فلسطين</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
