@@ -37,9 +37,21 @@ export default function Navbar() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Detect iOS
+    // Register Service Worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => console.log("SW Registered", reg))
+        .catch((err) => console.error("SW Registration failed", err));
+    }
+
+    // Detect iOS (including modern iPads)
     const userAgent = window.navigator.userAgent.toLowerCase();
-    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+    const isIOSDevice =
+      /iphone|ipad|ipod/.test(userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    setIsIOS(isIOSDevice);
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -216,29 +228,34 @@ export default function Navbar() {
                   </Link>
                 ))}
 
-                {/* Install App Button for iOS/Android under Roommate link */}
+                {/* PWA Install Button - Show more reliably */}
                 {(deferredPrompt ||
-                  (isIOS && !(window.navigator as any).standalone)) && (
-                  <button
-                    onClick={() => {
-                      if (isIOS) {
-                        setShowIOSGuide(true);
+                  isIOS ||
+                  /android/.test(window.navigator.userAgent.toLowerCase())) &&
+                  !(window.navigator as any).standalone && (
+                    <button
+                      onClick={() => {
+                        if (isIOS) {
+                          setShowIOSGuide(true);
+                        } else if (deferredPrompt) {
+                          handleInstallClick();
+                        } else {
+                          alert(
+                            "لتثبيت التطبيق على أندرويد، اضغط على النقاط الثلاث في المتصفح ثم اختر 'تثبيت التطبيق'.",
+                          );
+                        }
                         setIsOpen(false);
-                      } else {
-                        handleInstallClick();
-                        setIsOpen(false);
-                      }
-                    }}
-                    className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-primary bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all w-full"
-                  >
-                    <div className="w-10 h-10 flex items-center justify-center rounded-xl text-primary">
-                      <Download size={22} />
-                    </div>
-                    <span className="text-xl font-bold flex-1 text-right">
-                      تثبيت التطبيق
-                    </span>
-                  </button>
-                )}
+                      }}
+                      className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-primary bg-primary/10 border-2 border-primary/20 hover:bg-primary/20 transition-all w-full mt-4"
+                    >
+                      <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+                        <Download size={22} />
+                      </div>
+                      <span className="text-xl font-black flex-1 text-right">
+                        تثبيت تطبيق سكّني
+                      </span>
+                    </button>
+                  )}
               </div>
 
               {/* Footer Button */}
