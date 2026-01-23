@@ -68,7 +68,11 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? "bg-white/80 backdrop-blur-2xl border-b border-slate-200 py-3" : "bg-transparent py-6"}`}
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+        scrolled
+          ? "bg-white/90 backdrop-blur-2xl border-b border-slate-200 py-3 shadow-lg shadow-slate-200/20"
+          : "bg-white/50 backdrop-blur-md py-4 sm:py-6"
+      }`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
         <div className="flex justify-between items-center h-16">
@@ -125,12 +129,20 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-3">
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="p-3 bg-primary/10 text-primary border border-primary/20 rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm active:scale-90"
+              >
+                <Download size={20} />
+              </button>
+            )}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-900 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
+              className="text-slate-900 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all active:scale-90 shadow-sm"
             >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+              <Menu size={24} />
             </button>
           </div>
         </div>
@@ -151,8 +163,8 @@ export default function Navbar() {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 bottom-0 right-0 w-[85%] max-w-sm bg-white border-l border-slate-200 z-50 md:hidden flex flex-col shadow-2xl"
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed top-0 bottom-0 right-0 w-[85%] max-w-sm bg-white border-l border-slate-200 z-[60] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.1)]"
             >
               <div className="p-8 flex justify-between items-center border-b border-slate-100">
                 <div className="flex items-center gap-3">
