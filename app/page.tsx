@@ -42,7 +42,7 @@ export default function Home() {
                 الآمنة لطلاب جامعة النجاح. نوفر لك خيارات متنوعة بالقرب من الحرم
                 الجديد، الحرم القديم، والأكاديمية.
               </p>
-              <div className="flex flex-col sm:row gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   href="/students"
                   className="bg-premium-gradient text-white px-8 py-4 rounded-xl text-lg font-black shadow-2xl shadow-primary/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
