@@ -166,49 +166,49 @@ export default function Navbar() {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="fixed top-0 bottom-0 right-0 w-[85%] max-w-sm bg-white border-l border-slate-200 z-[60] md:hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.1)]"
             >
-              <div className="p-8 flex justify-between items-center border-b border-slate-100">
+              <div className="p-6 flex justify-between items-center border-b border-slate-50">
                 <div className="flex items-center gap-3">
-                  <div className="bg-premium-gradient p-2 rounded-xl text-white">
+                  <div className="bg-primary p-2 rounded-xl text-white shadow-lg shadow-primary/20">
                     <Building2 size={24} />
                   </div>
-                  <span className="text-2xl font-black text-slate-900">
+                  <span className="text-xl font-black text-slate-900 tracking-tight">
                     سكّني
                   </span>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-3 bg-slate-50 rounded-2xl text-slate-500 hover:text-slate-900"
+                  className="p-2.5 bg-slate-50 rounded-xl text-slate-400 hover:text-slate-900 transition-colors"
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 space-y-4">
+              <div className="flex-1 overflow-y-auto p-6 space-y-3">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-primary/50 transition-all group"
+                    className="flex items-center justify-between p-5 bg-slate-50/50 rounded-2xl border border-transparent hover:border-primary/20 hover:bg-white transition-all group"
                   >
-                    <span className="text-xl font-black text-slate-600 group-hover:text-primary transition-colors">
+                    <span className="text-lg font-black text-slate-600 group-hover:text-primary transition-colors">
                       {link.name}
                     </span>
                     <ArrowRight
-                      size={20}
-                      className="text-slate-400 group-hover:text-primary -rotate-180"
+                      size={18}
+                      className="text-slate-300 group-hover:text-primary -rotate-180 transition-all group-hover:translate-x-1"
                     />
                   </Link>
                 ))}
               </div>
 
-              <div className="p-8 border-t border-slate-100 space-y-4">
+              <div className="p-6 border-t border-slate-50 space-y-3 bg-slate-50/30">
                 <Link
                   href="/owner/submit"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center gap-3 w-full py-5 bg-premium-gradient text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-primary text-white rounded-xl font-black text-base shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  <Building2 size={20} />
+                  <Building2 size={18} />
                   أضف سكنك الآن
                 </Link>
 
@@ -218,16 +218,16 @@ export default function Navbar() {
                       handleInstallClick();
                       setIsOpen(false);
                     }}
-                    className="flex items-center justify-center gap-3 w-full py-5 bg-white border-2 border-primary text-primary rounded-2xl font-black text-lg shadow-sm"
+                    className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-black text-base shadow-sm hover:border-primary/30 transition-all"
                   >
-                    <Download size={20} />
-                    تثبيت التطبيق على الجوال
+                    <Download size={18} />
+                    تثبيت التطبيق
                   </button>
                 )}
 
-                <div className="text-center py-4">
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em]">
-                    Sakany - Nablus, Palestine
+                <div className="text-center pt-6 pb-2">
+                  <p className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em]">
+                    Sakany • Nablus • Palestine
                   </p>
                 </div>
               </div>
