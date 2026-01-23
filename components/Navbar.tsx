@@ -33,8 +33,13 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    // Detect iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -210,6 +215,30 @@ export default function Navbar() {
                     </span>
                   </Link>
                 ))}
+
+                {/* Install App Button for iOS/Android under Roommate link */}
+                {(deferredPrompt ||
+                  (isIOS && !(window.navigator as any).standalone)) && (
+                  <button
+                    onClick={() => {
+                      if (isIOS) {
+                        setShowIOSGuide(true);
+                        setIsOpen(false);
+                      } else {
+                        handleInstallClick();
+                        setIsOpen(false);
+                      }
+                    }}
+                    className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-primary bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all w-full"
+                  >
+                    <div className="w-10 h-10 flex items-center justify-center rounded-xl text-primary">
+                      <Download size={22} />
+                    </div>
+                    <span className="text-xl font-bold flex-1 text-right">
+                      تثبيت التطبيق
+                    </span>
+                  </button>
+                )}
               </div>
 
               {/* Footer Button */}
@@ -221,21 +250,83 @@ export default function Navbar() {
                 >
                   أضف سكنك الآن
                 </Link>
-
-                {deferredPrompt && (
-                  <button
-                    onClick={() => {
-                      handleInstallClick();
-                      setIsOpen(false);
-                    }}
-                    className="flex items-center justify-center w-full py-4 mt-2 text-slate-400 font-bold text-sm hover:text-primary transition-all"
-                  >
-                    تثبيت تطبيق سكّني
-                  </button>
-                )}
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* iOS Install Guide Modal */}
+      <AnimatePresence>
+        {showIOSGuide && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowIOSGuide(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <button
+                  onClick={() => setShowIOSGuide(false)}
+                  className="p-2 bg-slate-100 rounded-xl text-slate-400"
+                >
+                  <X size={20} />
+                </button>
+                <div className="bg-primary/10 p-3 rounded-2xl text-primary">
+                  <Download size={24} />
+                </div>
+              </div>
+
+              <div className="text-right space-y-4">
+                <h3 className="text-2xl font-black text-slate-900">
+                  تثبيت سكّني على آيفون
+                </h3>
+                <p className="text-slate-600 font-bold leading-relaxed">
+                  لثبيت التطبيق على جهازك، يرجى اتباع الخطوات التالية في متصفح
+                  Safari:
+                </p>
+
+                <div className="space-y-4 pt-2">
+                  <div className="flex flex-row-reverse items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 mt-1">
+                      1
+                    </div>
+                    <p className="flex-1 text-slate-700 font-bold text-sm">
+                      إضغط على زر المشاركة{" "}
+                      <span className="inline-block p-1 bg-slate-100 rounded mx-1 text-blue-500">
+                        ↑
+                      </span>{" "}
+                      في المحرك السفلي.
+                    </p>
+                  </div>
+                  <div className="flex flex-row-reverse items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 mt-1">
+                      2
+                    </div>
+                    <p className="flex-1 text-slate-700 font-bold text-sm">
+                      قم بالتمرير للأسفل واختر "إضافة إلى الشاشة الرئيسية" (Add
+                      to Home Screen).
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowIOSGuide(false)}
+                  className="w-full py-4 mt-6 bg-slate-900 text-white rounded-2xl font-black text-lg transition-all active:scale-95"
+                >
+                  حسناً، فهمت
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </>
