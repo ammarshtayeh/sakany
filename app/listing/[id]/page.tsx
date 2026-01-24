@@ -27,6 +27,16 @@ import { motion } from "framer-motion";
 
 import Navbar from "@/components/Navbar";
 import ListingCard from "@/components/ListingCard";
+import dynamic from "next/dynamic";
+
+const PropertyMap = dynamic(() => import("@/components/PropertyMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[350px] bg-slate-50 animate-pulse rounded-[2.5rem] flex items-center justify-center text-slate-400 font-bold">
+      جاري تحميل خريطة الموقع...
+    </div>
+  ),
+});
 
 export default function ListingDetails({
   params,
@@ -210,6 +220,23 @@ export default function ListingDetails({
                 ))}
               </div>
             </div>
+
+            {/* Map Section */}
+            {listing.lat && listing.lng && (
+              <div className="mb-12">
+                <h3 className="text-xl font-black mb-8 text-slate-900 flex items-center gap-3">
+                  <div className="w-8 h-1 bg-primary rounded-full"></div>
+                  الموقع على الخريطة
+                </h3>
+                <div className="h-[400px]">
+                  <PropertyMap
+                    lat={listing.lat}
+                    lng={listing.lng}
+                    title={listing.title}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Owner Section */}
             <div className="bg-premium-gradient p-10 rounded-[3rem] shadow-2xl shadow-orange-600/30 text-white relative overflow-hidden mb-12">

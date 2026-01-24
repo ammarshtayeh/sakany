@@ -15,10 +15,25 @@ import {
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const MapPicker = dynamic(() => import("@/components/MapPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] bg-slate-100 animate-pulse rounded-[2rem] flex items-center justify-center text-slate-400 font-bold">
+      جاري تحميل الخريطة...
+    </div>
+  ),
+});
 
 export default function OwnerSubmitPage() {
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [locationCoords, setLocationCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [showMap, setShowMap] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,6 +148,46 @@ export default function OwnerSubmitPage() {
                         required
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                      <label className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <MapPin size={16} />
+                        موقع العقار على الخريطة (اختياري)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowMap(!showMap)}
+                        className="text-xs font-black text-primary hover:underline underline-offset-4"
+                      >
+                        {showMap ? "إخفاء الخريطة" : "تحديد الموقع بدقة"}
+                      </button>
+                    </div>
+
+                    <AnimatePresence>
+                      {showMap && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <MapPicker
+                            onLocationSelect={(lat, lng) =>
+                              setLocationCoords({ lat, lng })
+                            }
+                          />
+                          {locationCoords && (
+                            <p className="text-xs text-emerald-600 font-bold mt-3 bg-emerald-50 px-4 py-2 rounded-xl inline-block">
+                              ✅ تم تحديد الموقع:{" "}
+                              {locationCoords.lat.toFixed(4)},{" "}
+                              {locationCoords.lng.toFixed(4)}
+                            </p>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-8">

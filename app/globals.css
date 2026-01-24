@@ -124,3 +124,28 @@
 * {
   font-family: "Almarai", sans-serif !important;
 }
+
+/* Leaflet Map Styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1.5rem;
+  z-index: 10;
+}
+
+.leaflet-control-container .leaflet-control {
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.leaflet-bar a {
+  background-color: white !important;
+  color: #64748b !important;
+  border: none !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+}

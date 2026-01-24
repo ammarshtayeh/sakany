@@ -26,6 +26,8 @@ export interface Listing {
   sqft?: number;
   nearbyCollege?: "new_campus" | "old_campus" | "medical_campus" | "academy";
   reviews?: Review[];
+  lat?: number;
+  lng?: number;
 }
 
 export interface RoommatePost {
@@ -67,6 +69,8 @@ export const mockListings: Listing[] = [
     bathrooms: 2,
     sqft: 120,
     nearbyCollege: "new_campus",
+    lat: 32.2272,
+    lng: 35.2227,
     reviews: [
       {
         id: "r1",
@@ -110,6 +114,8 @@ export const mockListings: Listing[] = [
     bathrooms: 1,
     sqft: 20,
     nearbyCollege: "old_campus",
+    lat: 32.2217,
+    lng: 35.2425,
     reviews: [
       {
         id: "r3",
@@ -145,6 +151,8 @@ export const mockListings: Listing[] = [
     bathrooms: 1,
     sqft: 45,
     nearbyCollege: "academy",
+    lat: 32.2312,
+    lng: 35.2155,
   },
   {
     id: "4",
