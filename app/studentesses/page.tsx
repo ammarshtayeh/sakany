@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { mockListings } from "@/data/mockData";
+import { useState, useMemo, useEffect } from "react";
+import { Listing } from "@/data/mockData";
+import { getListings } from "@/lib/firestore-service";
 import ListingCard from "@/components/ListingCard";
 import { Search, Filter, Compass, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -13,9 +14,25 @@ export default function StudentessesPage() {
   const [maxPrice, setMaxPrice] = useState(3000);
   const [selectedCollege, setSelectedCollege] = useState("all");
 
+  const [listingsData, setListingsData] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const data = await getListings("studentesses");
+        setListingsData(data);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchListings();
+  }, []);
+
   const listings = useMemo(() => {
-    return mockListings
-      .filter((l) => l.category === "studentesses" && !l.isPending)
+    return listingsData
       .filter(
         (l) =>
           l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -158,17 +175,26 @@ export default function StudentessesPage() {
         </AnimatePresence>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {listings.map((listing, idx) => (
-            <motion.div
-              key={listing.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: idx * 0.05 }}
-            >
-              <ListingCard listing={listing} />
-            </motion.div>
-          ))}
+          {isLoading ? (
+            <div className="col-span-full py-40 text-center flex flex-col items-center">
+              <div className="w-16 h-16 border-4 border-slate-200 border-t-pink-600 rounded-full animate-spin mb-4"></div>
+              <p className="text-xl font-black text-slate-500">
+                جاري تحميل السكنات...
+              </p>
+            </div>
+          ) : (
+            listings.map((listing, idx) => (
+              <motion.div
+                key={listing.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: idx * 0.05 }}
+              >
+                <ListingCard listing={listing} />
+              </motion.div>
+            ))
+          )}
           {listings.length === 0 && (
             <div className="col-span-full py-40 text-center opacity-20 flex flex-col items-center">
               <Compass

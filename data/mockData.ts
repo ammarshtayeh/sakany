@@ -26,8 +26,8 @@ export interface Listing {
   sqft?: number;
   nearbyCollege?: "new_campus" | "old_campus" | "medical_campus" | "academy";
   reviews?: Review[];
-  lat?: number;
-  lng?: number;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface RoommatePost {

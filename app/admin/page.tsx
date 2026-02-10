@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { mockListings, Listing } from "@/data/mockData";
+import { useState, useMemo, useEffect } from "react";
+import { Listing } from "@/data/mockData";
+import {
+  getPendingListings,
+  getListings,
+  approveListing,
+  rejectListing,
+} from "@/lib/firestore-service";
 import {
   Building2,
   Users,
@@ -30,7 +36,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [listings, setListings] = useState<Listing[]>(mockListings);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -79,21 +86,54 @@ export default function AdminDashboard() {
     [filteredListings],
   );
 
-  const handleDelete = (id: string) => {
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        console.log("Fetching listings...");
+        const approved = await getListings();
+        console.log("Approved listings fetched:", approved.length);
+        const pending = await getPendingListings();
+        console.log("Pending listings fetched:", pending.length);
+
+        setListings([...approved, ...pending]);
+      } catch (error) {
+        console.error(
+          "Failed to fetch listings. Check console for firestore errors (like missing index).",
+          error,
+        );
+        // Fallback to mock data if fetch fails (for debugging UI) or empty array
+        // For now, let's keep it empty but log the error visibly if possible
+        alert(
+          "فشل تحميل البيانات. تأكد من اتصال الإنترنت أو إعدادات الفاير بيس (index missing).",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [activeTab]); // Refresh when tab changes to ensure fresh data
+
+  const handleDelete = async (id: string) => {
     if (confirm("هل أنت متأكد من حذف هذا العقار؟")) {
-      setListings(listings.filter((l) => l.id !== id));
+      await rejectListing(id);
+      setListings((prev) => prev.filter((l) => l.id !== id));
     }
   };
 
-  const handleApprove = (id: string) => {
-    setListings(
-      listings.map((l) => (l.id === id ? { ...l, isPending: false } : l)),
+  const handleApprove = async (id: string) => {
+    await approveListing(id);
+    setListings((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, isPending: false } : l)),
     );
   };
 
-  const handleReject = (id: string) => {
+  const handleReject = async (id: string) => {
     if (confirm("هل أنت متأكد من رفض هذا الطلب؟ سيتم حذفه من النظام.")) {
-      setListings(listings.filter((l) => l.id !== id));
+      await rejectListing(id);
+      setListings((prev) => prev.filter((l) => l.id !== id));
     }
   };
 
@@ -535,13 +575,18 @@ export default function AdminDashboard() {
                     key={listing.id}
                     className="bg-white border border-slate-200 p-8 rounded-[2.5rem] flex flex-col md:flex-row gap-8 hover:border-primary/50 transition-all group shadow-sm"
                   >
-                    <div className="relative w-full md:w-64 h-48 rounded-[2rem] overflow-hidden shrink-0 border border-white/10 self-center">
+                    <div className="relative w-full md:w-64 h-48 rounded-[2rem] overflow-hidden shrink-0 border border-white/10 self-center group-hover:scale-[1.02] transition-transform duration-500">
                       <Image
                         src={listing.image}
                         alt=""
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="object-cover"
                       />
+                      {listing.images && listing.images.length > 1 && (
+                        <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-black flex items-center gap-1">
+                          <ImageIcon size={12} />+{listing.images.length - 1}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-2">
                       <div>
@@ -658,8 +703,13 @@ export default function AdminDashboard() {
                         src={listing.image}
                         alt=""
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
                       />
+                      {listing.images && listing.images.length > 1 && (
+                        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-white text-[10px] font-black pointer-events-none">
+                          +{listing.images.length - 1}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 flex flex-col h-full justify-between py-2">
                       <div>
