@@ -18,8 +18,14 @@ export default function SeedPage() {
         // Remove ID as Firestore generates it
         const { id, ...listingData } = listing;
 
+        // Ensure images array exists (addListing requires it)
+        const dataToUpload = {
+          ...listingData,
+          images: listingData.images || [listingData.image],
+        };
+
         setLog((prev) => [...prev, `Uploading: ${listing.title}...`]);
-        await addListing(listingData);
+        await addListing(dataToUpload);
         setLog((prev) => [...prev, `✅ SUCCESS: ${listing.title}`]);
       }
       setStatus("complete");
