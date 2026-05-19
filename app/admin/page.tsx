@@ -33,6 +33,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -86,10 +88,40 @@ export default function AdminDashboard() {
     [filteredListings],
   );
 
-  // Fetch data
+  const handleLogout = () => {
+    localStorage.removeItem("local_admin");
+    localStorage.removeItem("local_owner");
+    if (auth) {
+      signOut(auth as any);
+    }
+    window.location.href = "/";
+  };
+
+  // Fetch data & Auth check
   useEffect(() => {
-    const fetchData = async () => {
+    const checkAuthAndFetch = async () => {
       setIsLoading(true);
+      
+      const isLocalAdmin = localStorage.getItem("local_admin") === "true";
+      let isAuthed = isLocalAdmin;
+
+      if (!isLocalAdmin && auth) {
+        await new Promise<void>((resolve) => {
+          const unsubscribe = onAuthStateChanged(auth as any, (user) => {
+            if (user && user.email === "ammar.shtayeh@gmail.com") {
+              isAuthed = true;
+            }
+            unsubscribe();
+            resolve();
+          });
+        });
+      }
+
+      if (!isAuthed) {
+        window.location.href = "/owner/login";
+        return;
+      }
+
       try {
         console.log("Fetching listings...");
         const approved = await getListings();
@@ -99,12 +131,6 @@ export default function AdminDashboard() {
 
         setListings([...approved, ...pending]);
       } catch (error) {
-        console.error(
-          "Failed to fetch listings. Check console for firestore errors (like missing index).",
-          error,
-        );
-        // Fallback to mock data if fetch fails (for debugging UI) or empty array
-        // For now, let's keep it empty but log the error visibly if possible
         alert(
           "فشل تحميل البيانات. تأكد من اتصال الإنترنت أو إعدادات الفاير بيس (index missing).",
         );
@@ -112,8 +138,7 @@ export default function AdminDashboard() {
         setIsLoading(false);
       }
     };
-
-    fetchData();
+    checkAuthAndFetch();
   }, [activeTab]); // Refresh when tab changes to ensure fresh data
 
   const handleDelete = async (id: string) => {
@@ -349,7 +374,10 @@ export default function AdminDashboard() {
               </nav>
 
               <div className="p-8 border-t border-white/5">
-                <button className="flex items-center gap-4 text-red-500 font-black w-full px-6 transition-colors">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-4 text-red-500 font-black w-full px-6 transition-colors"
+                >
                   <LogOut size={20} />
                   خروج آمن
                 </button>
@@ -414,7 +442,10 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="p-8 border-t border-white/5">
-          <button className="flex items-center gap-4 text-red-500 hover:text-red-400 font-black w-full px-6 transition-colors">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-4 text-red-500 hover:text-red-400 font-black w-full px-6 transition-colors"
+          >
             <LogOut size={20} />
             خروج آمن
           </button>

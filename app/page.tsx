@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -24,11 +24,29 @@ import {
   generateOrganizationSchema,
   generateWebsiteSchema,
 } from "@/lib/schema";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Home() {
   const organizationSchema = generateOrganizationSchema();
   const websiteSchema = generateWebsiteSchema();
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const isLocalAdmin = localStorage.getItem("local_admin") === "true";
+    if (isLocalAdmin) {
+      setIsAdmin(true);
+      return;
+    }
+
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setIsAdmin(user?.email === "ammar.shtayeh@gmail.com");
+      });
+      return () => unsubscribe();
+    }
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -42,6 +60,36 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
       <Navbar />
+
+      {isAdmin && (
+        <div className="bg-slate-900 text-white py-4 px-6 text-center flex flex-col md:flex-row items-center justify-center gap-4 border-b border-primary/20 sticky top-[72px] md:top-[88px] z-40 shadow-xl animate-in slide-in-from-top-full duration-500">
+          <div className="flex items-center gap-3 justify-center">
+            <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <p className="font-bold text-sm md:text-base">
+              مرحباً بك عمار! أنت الآن مسجل كـ <span className="text-primary font-black">مدير الموقع (Admin)</span>.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <Link
+              href="/admin"
+              className="bg-primary text-white text-xs font-black px-4 py-2 rounded-xl hover:bg-primary-600 transition-all shadow-md active:scale-95"
+            >
+              الذهاب إلى لوحة الإدارة ⚙️
+            </Link>
+            <button
+              onClick={() => {
+                localStorage.removeItem("local_admin");
+                if (auth) auth.signOut();
+                setIsAdmin(false);
+                window.location.reload();
+              }}
+              className="bg-white/10 hover:bg-white/20 text-white text-xs font-black px-4 py-2 rounded-xl transition-all"
+            >
+              تسجيل الخروج
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section
@@ -578,17 +626,13 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-16 mb-20">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-8">
-                <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1">
                   <Image
                     src="/logo.png"
                     alt="لوجو سكنو"
-                    width={143}
-                    height={78}
-                    className="max-w-none absolute"
-                    style={{
-                      top: "-3px",
-                      left: "-44px",
-                    }}
+                    width={52}
+                    height={52}
+                    className="object-contain"
                   />
                 </div>
                 <div className="flex flex-col">

@@ -18,6 +18,8 @@ import {
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import OwnerActionModal from "./OwnerActionModal";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -36,6 +38,37 @@ export default function Navbar() {
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    // Check local fallback auth first
+    const isLocalAdmin = localStorage.getItem("local_admin") === "true";
+    const isLocalOwner = localStorage.getItem("local_owner") === "true";
+    
+    if (isLocalAdmin) {
+      setCurrentUser({ email: "ammar.shtayeh@gmail.com" });
+      setIsAdmin(true);
+    } else if (isLocalOwner) {
+      setCurrentUser({ email: "owner@sakannu.com" });
+      setIsAdmin(false);
+    }
+
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth as any, (user) => {
+        if (user) {
+          setCurrentUser(user);
+          setIsAdmin(user.email === "ammar.shtayeh@gmail.com");
+        } else {
+          if (!isLocalAdmin && !isLocalOwner) {
+            setCurrentUser(null);
+            setIsAdmin(false);
+          }
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, []);
 
   useEffect(() => {
     // Register Service Worker
@@ -73,6 +106,17 @@ export default function Navbar() {
     };
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("local_admin");
+    localStorage.removeItem("local_owner");
+    if (auth) {
+      signOut(auth as any);
+    }
+    setCurrentUser(null);
+    setIsAdmin(false);
+    window.location.href = "/";
+  };
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -102,24 +146,20 @@ export default function Navbar() {
           <div className="flex justify-between items-center h-16">
             {/* Right Side: Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-16 h-16 overflow-hidden rounded-2xl bg-white border border-slate-100 group-hover:rotate-[10deg] transition-transform duration-500">
+              <div className="relative w-14 h-14 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
                 <Image
                   src="/logo.png"
                   alt="لوجو سكنو"
-                  width={164}
-                  height={89}
-                  className="max-w-none absolute"
-                  style={{
-                    top: "-4px",
-                    left: "-50px",
-                  }}
+                  width={52}
+                  height={52}
+                  className="object-contain"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-3xl font-black text-slate-900 leading-none tracking-tight">
+                <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">
                   سكنو
                 </span>
-                <span className="text-[11px] font-black text-slate-400 tracking-widest mt-1">
+                <span className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">
                   SAKANNU
                 </span>
               </div>
@@ -142,20 +182,40 @@ export default function Navbar() {
 
             {/* Left Side: Actions */}
             <div className="hidden md:flex items-center gap-10">
-              <div className="flex items-center gap-6 border-l border-slate-200 pl-6 h-8">
-                <Link
-                  href="/owner/dashboard"
-                  className="text-slate-600 hover:text-primary font-bold transition-all text-sm"
-                >
-                  لوحة المالك
-                </Link>
-                <Link
-                  href="/admin"
-                  className="text-slate-400 hover:text-primary font-bold transition-all text-sm"
-                >
-                  الإدارة
-                </Link>
-              </div>
+              {currentUser ? (
+                <div className="flex items-center gap-6 border-l border-slate-200 pl-6 h-8">
+                  {isAdmin ? (
+                    <Link
+                      href="/admin"
+                      className="text-slate-600 hover:text-primary font-bold transition-all text-sm animate-in fade-in"
+                    >
+                      الإدارة
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/owner/dashboard"
+                      className="text-slate-600 hover:text-primary font-bold transition-all text-sm animate-in fade-in"
+                    >
+                      لوحة المالك
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="text-slate-400 hover:text-red-500 font-bold transition-all text-sm"
+                  >
+                    تسجيل الخروج
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-6 border-l border-slate-200 pl-6 h-8">
+                  <Link
+                    href="/owner/login"
+                    className="text-slate-600 hover:text-primary font-bold transition-all text-sm"
+                  >
+                    دخول الملاك
+                  </Link>
+                </div>
+              )}
               <button
                 onClick={() => setIsOwnerModalOpen(true)}
                 className="text-slate-600 hover:text-primary font-bold transition-colors underline-offset-8 hover:underline decoration-primary/30"
@@ -256,28 +316,58 @@ export default function Navbar() {
                   </Link>
                 ))}
 
-                <div className="pt-4 border-t border-slate-50 mt-4 space-y-2">
-                  <Link
-                    href="/owner/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
-                  >
-                    <LayoutDashboard size={22} className="text-slate-400" />
-                    <span className="text-lg font-bold flex-1 text-right">
-                      لوحة التحكم للملاك
-                    </span>
-                  </Link>
-                  <Link
-                    href="/admin"
-                    onClick={() => setIsOpen(false)}
-                    className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
-                  >
-                    <Settings size={22} className="text-slate-400" />
-                    <span className="text-lg font-bold flex-1 text-right">
-                      لوحة الإدارة للموقع
-                    </span>
-                  </Link>
-                </div>
+                {currentUser ? (
+                  <div className="pt-4 border-t border-slate-50 mt-4 space-y-2">
+                    {isAdmin ? (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsOpen(false)}
+                        className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
+                      >
+                        <Settings size={22} className="text-slate-400" />
+                        <span className="text-lg font-bold flex-1 text-right">
+                          لوحة الإدارة للموقع
+                        </span>
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/owner/dashboard"
+                        onClick={() => setIsOpen(false)}
+                        className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
+                      >
+                        <LayoutDashboard size={22} className="text-slate-400" />
+                        <span className="text-lg font-bold flex-1 text-right">
+                          لوحة التحكم للملاك
+                        </span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-red-500 hover:bg-red-50 transition-all w-full text-right"
+                    >
+                      <X size={22} className="text-red-400" />
+                      <span className="text-lg font-bold flex-1 text-right">
+                        تسجيل الخروج
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-4 border-t border-slate-50 mt-4 space-y-2">
+                    <Link
+                      href="/owner/login"
+                      onClick={() => setIsOpen(false)}
+                      className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
+                    >
+                      <LayoutDashboard size={22} className="text-slate-400" />
+                      <span className="text-lg font-bold flex-1 text-right">
+                        دخول الملاك
+                      </span>
+                    </Link>
+                  </div>
+                )}
 
                 {/* PWA Install Button - Show more reliably */}
                 {(deferredPrompt ||

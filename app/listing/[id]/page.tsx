@@ -3,6 +3,8 @@
 import { use, useState, useEffect } from "react";
 import { mockListings, Listing } from "@/data/mockData";
 import { getListingById, addListingReview } from "@/lib/firestore-service";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   Building2,
   MapPin,
@@ -50,6 +52,22 @@ export default function ListingDetails({
   const { id } = use(params);
   const [listing, setListing] = useState<Listing | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const isLocalAdmin = localStorage.getItem("local_admin") === "true";
+    if (isLocalAdmin) {
+      setIsAdmin(true);
+      return;
+    }
+
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth as any, (user) => {
+        setIsAdmin(user?.email === "ammar.shtayeh@gmail.com");
+      });
+      return () => unsubscribe();
+    }
+  }, []);
 
   useEffect(() => {
     async function loadListing() {
@@ -170,6 +188,23 @@ export default function ListingDetails({
             animate={{ opacity: 1, x: 0 }}
             className="flex flex-col"
           >
+            {isAdmin && (
+              <div className="bg-slate-900 border border-primary/20 p-6 rounded-[2.5rem] mb-10 text-white flex items-center justify-between shadow-2xl animate-in slide-in-from-bottom duration-500">
+                <div className="text-right">
+                  <h4 className="text-lg font-black text-primary mb-1">لوحة التحكم السريعة للمسؤول</h4>
+                  <p className="text-xs font-bold text-slate-400">بصفتك مديراً للموقع، يمكنك التحكم في هذا العقار.</p>
+                </div>
+                <div className="flex gap-3">
+                  <Link
+                    href={`/admin`}
+                    className="bg-primary hover:bg-primary-600 text-white text-xs font-black px-5 py-3 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95"
+                  >
+                    تعديل / حذف العقار في لوحة الإدارة
+                  </Link>
+                </div>
+              </div>
+            )}
+
             <div className="mb-10">
               <div className="flex items-center gap-3 text-primary font-black mb-4">
                 <Building2 size={24} />

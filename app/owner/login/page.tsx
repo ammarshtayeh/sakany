@@ -14,15 +14,68 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function OwnerLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login
-    window.location.href = "/owner/dashboard";
+    if (!auth) {
+      // Fallback local mode
+      if (email === "ammar.shtayeh@gmail.com" && password === "ammarking") {
+        localStorage.setItem("local_admin", "true");
+        window.location.href = "/admin";
+      } else {
+        localStorage.setItem("local_owner", "true");
+        window.location.href = "/owner/dashboard";
+      }
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth as any, email, password);
+      const user = userCredential.user;
+      
+      if (user.email === "ammar.shtayeh@gmail.com") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/owner/dashboard";
+      }
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      
+      // Auto-create/seed user if it is the admin credentials and not found
+      if (
+        (error.code === "auth/user-not-found" || error.code === "auth/invalid-credential") &&
+        email === "ammar.shtayeh@gmail.com" &&
+        password === "ammarking"
+      ) {
+        try {
+          await createUserWithEmailAndPassword(auth as any, email, password);
+          window.location.href = "/admin";
+          return;
+        } catch (createError: any) {
+          console.error("Failed to auto-create admin:", createError);
+          setErrorMessage("فشل في إنشاء حساب المسؤول تلقائياً: " + createError.message);
+        }
+      } else {
+        let msg = "فشل في تسجيل الدخول. يرجى التحقق من البريد وكلمة المرور.";
+        if (error.code === "auth/invalid-email") msg = "البريد الإلكتروني غير صالح.";
+        if (error.code === "auth/wrong-password") msg = "كلمة المرور خاطئة.";
+        if (error.code === "auth/user-not-found") msg = "الحساب غير موجود.";
+        setErrorMessage(msg);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,17 +88,13 @@ export default function OwnerLoginPage() {
 
         <div className="relative z-10 max-w-lg text-right">
           <Link href="/" className="inline-flex items-center gap-4 mb-12 group">
-            <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm group-hover:rotate-12 transition-transform">
+            <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1 group-hover:rotate-12 transition-transform">
               <Image
                 src="/logo.png"
                 alt="لوجو سكنو"
-                width={143}
-                height={78}
-                className="max-w-none absolute"
-                style={{
-                  top: "-3px",
-                  left: "-44px",
-                }}
+                width={52}
+                height={52}
+                className="object-contain"
               />
             </div>
             <div className="flex flex-col text-right">
@@ -93,17 +142,13 @@ export default function OwnerLoginPage() {
               href="/"
               className="md:hidden inline-flex items-center gap-3 mb-8"
             >
-              <div className="relative w-10 h-10 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm">
+              <div className="relative w-10 h-10 overflow-hidden rounded-lg bg-white border border-slate-100 shadow-sm flex items-center justify-center p-0.5">
                 <Image
                   src="/logo.png"
                   alt="لوجو سكنو"
-                  width={102}
-                  height={56}
-                  className="max-w-none absolute"
-                  style={{
-                    top: "-2px",
-                    left: "-31px",
-                  }}
+                  width={36}
+                  height={36}
+                  className="object-contain"
                 />
               </div>
               <div className="flex flex-col text-right">
@@ -118,6 +163,12 @@ export default function OwnerLoginPage() {
               سجل دخولك لإدارة سكناتك في نابلس
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="bg-red-50 text-red-600 px-6 py-4 rounded-2xl font-bold text-sm text-right mb-6 border border-red-100 animate-in fade-in">
+              {errorMessage}
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
@@ -168,10 +219,17 @@ export default function OwnerLoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-premium-gradient py-5 rounded-2xl font-black text-xl shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-white flex items-center justify-center gap-3 mt-8"
+              disabled={isLoading}
+              className="w-full bg-premium-gradient py-5 rounded-2xl font-black text-xl shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-white flex items-center justify-center gap-3 mt-8 disabled:opacity-50 disabled:pointer-events-none"
             >
-              دخول إلى حسابي
-              <ArrowRight size={24} className="rotate-180" />
+              {isLoading ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  دخول إلى حسابي
+                  <ArrowRight size={24} className="rotate-180" />
+                </>
+              )}
             </button>
           </form>
 
