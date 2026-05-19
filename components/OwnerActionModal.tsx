@@ -45,7 +45,7 @@ export default function OwnerActionModal({
 
             <div className="text-right mb-10 mt-4">
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">
-                عرض عقارك على <span className="text-gradient">سكّنلي</span>
+                عرض عقارك على <span className="text-gradient">سكنو</span>
               </h2>
               <p className="text-slate-500 font-bold text-lg">
                 اختر الطريقة التي تفضلها للبدء بتأجير سكنك

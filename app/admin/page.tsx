@@ -300,7 +300,7 @@ export default function AdminDashboard() {
                       لوحة الإدارة
                     </span>
                     <span className="block text-[8px] text-primary font-bold uppercase tracking-widest mt-0.5">
-                      Sakanly Admin
+                      Sakannu Admin
                     </span>
                   </div>
                 </div>

@@ -84,7 +84,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto lg:mr-0 leading-relaxed font-bold"
               >
-                سكّنلي هي أول منصة فلسطينية متخصصة في توفير السكنات الطلابية
+                سكنو هي أول منصة فلسطينية متخصصة في توفير السكنات الطلابية
                 الآمنة لطلاب جامعة النجاح. نوفر لك خيارات متنوعة بالقرب من الحرم
                 الجديد، الحرم القديم، والأكاديمية.
               </motion.p>
@@ -180,7 +180,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg px-4 font-bold">
-              سواء كنت تدرس في الحرم الجديد أو القديم، سكّنلي توفر لك المسكن
+              سواء كنت تدرس في الحرم الجديد أو القديم، سكنو توفر لك المسكن
               الأقرب لكليتك بأسعار منافسة وبالشيكل.
             </p>
           </div>
@@ -397,7 +397,7 @@ export default function Home() {
               {
                 name: "سارة العبد",
                 major: "طب بشري",
-                text: "كطالبة مغتربة، كان يهمني جداً عامل الأمان. سكّنلي ساعدتني ألاقي سكن مريح وقريب جداً من المجمع الطبي.",
+                text: "كطالبة مغتربة، كان يهمني جداً عامل الأمان. سكنو ساعدتني ألاقي سكن مريح وقريب جداً من المجمع الطبي.",
               },
               {
                 name: "محمد خالد",
@@ -453,7 +453,7 @@ export default function Home() {
               },
               {
                 q: "كيف أتأكد أن الصور مطابقة للواقع؟",
-                a: "فريق سكّنلي يقوم بمعاينة وتصوير أغلب العقارات المدرجة لضمان المصداقية.",
+                a: "فريق سكنو يقوم بمعاينة وتصوير أغلب العقارات المدرجة لضمان المصداقية.",
               },
               {
                 q: "هل يوجد سكنات قريبة من الحرم الجديد؟",
@@ -578,12 +578,23 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-16 mb-20">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-8">
-                <div className="bg-primary/10 p-2.5 rounded-xl text-primary">
-                  <Building2 size={32} />
+                <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-1 shadow-sm">
+                  <Image
+                    src="/logo.png"
+                    alt="لوجو سكنو"
+                    width={48}
+                    height={48}
+                    className="object-contain"
+                  />
                 </div>
-                <span className="text-3xl font-black text-slate-900">
-                  سكّنلي
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-3xl font-black text-slate-900 leading-none">
+                    سكنو
+                  </span>
+                  <span className="text-[10px] font-black text-slate-400 tracking-widest mt-1">
+                    SAKANNU
+                  </span>
+                </div>
               </div>
               <p className="text-slate-500 max-w-sm mb-10 leading-relaxed text-lg">
                 منصة فلسطينية رائدة تهدف لتسهيل حياة الطلاب الدراسية في مدينة
@@ -663,7 +674,7 @@ export default function Home() {
           </div>
           <div className="pt-10 border-t border-slate-200 text-center text-sm text-slate-500 font-bold">
             <p>
-              © {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة سكّنلي
+              © {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة سكنو
               وصاحبها عمار اشتية - نابلس، فلسطين
             </p>
           </div>

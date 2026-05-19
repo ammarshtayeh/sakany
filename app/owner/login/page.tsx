@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function OwnerLoginPage() {
@@ -34,10 +35,19 @@ export default function OwnerLoginPage() {
 
         <div className="relative z-10 max-w-lg text-right">
           <Link href="/" className="inline-flex items-center gap-4 mb-12 group">
-            <div className="bg-white p-3 rounded-2xl text-primary shadow-xl group-hover:rotate-12 transition-transform">
-              <Building2 size={32} />
+            <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-1 shadow-sm group-hover:rotate-12 transition-transform">
+              <Image
+                src="/logo.png"
+                alt="لوجو سكنو"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
-            <span className="text-4xl font-black text-white">سكّنلي</span>
+            <div className="flex flex-col text-right">
+              <span className="text-4xl font-black text-white leading-none">سكنو</span>
+              <span className="text-[10px] font-black text-white/50 tracking-widest mt-1">SAKANNU</span>
+            </div>
           </Link>
 
           <motion.h1
@@ -79,10 +89,19 @@ export default function OwnerLoginPage() {
               href="/"
               className="md:hidden inline-flex items-center gap-3 mb-8"
             >
-              <div className="bg-primary p-2 rounded-xl text-white">
-                <Building2 size={24} />
+              <div className="relative w-10 h-10 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 shadow-sm">
+                <Image
+                  src="/logo.png"
+                  alt="لوجو سكنو"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
               </div>
-              <span className="text-2xl font-black text-slate-900">سكّنلي</span>
+              <div className="flex flex-col text-right">
+                <span className="text-2xl font-black text-slate-900 leading-none">سكنو</span>
+                <span className="text-[10px] font-black text-slate-400 tracking-wider">SAKANNU</span>
+              </div>
             </Link>
             <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">
               أهلاً بك مجدداً

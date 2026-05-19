@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "سكّنلي | منصة سكن طلاب جامعة النجاح الوطنية في نابلس",
+  title: "سكنو | منصة سكن طلاب جامعة النجاح الوطنية في نابلس",
   description:
     "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة لطلاب وطالبات جامعة النجاح في نابلس. سكنات موثقة بالقرب من الحرم الجديد والقديم والأكاديمية.",
   keywords: [
@@ -19,12 +19,12 @@ export const metadata: Metadata = {
     "سكن آمن للطالبات",
     "استوديو للطلاب",
     "غرف للإيجار نابلس",
-    "سكنلي",
-    "sakanly",
+    "سكنو",
+    "sakannu",
   ],
-  authors: [{ name: "سكّنلي - Sakanly" }],
+  authors: [{ name: "سكنو - Sakannu" }],
   creator: "عمار اشتية",
-  publisher: "سكّنلي",
+  publisher: "سكنو",
   formatDetection: {
     email: false,
     address: false,
@@ -34,14 +34,14 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "سكّنلي",
+    title: "سكنو",
   },
   openGraph: {
     type: "website",
     locale: "ar_PS",
-    url: "https://sakanly.vercel.app",
-    siteName: "سكّنلي - منصة سكن طلاب جامعة النجاح",
-    title: "سكّنلي | منصة سكن طلاب جامعة النجاح الوطنية في نابلس",
+    url: "https://sakannu.vercel.app",
+    siteName: "سكنو - منصة سكن طلاب جامعة النجاح",
+    title: "سكنو | منصة سكن طلاب جامعة النجاح الوطنية في نابلس",
     description:
       "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة لطلاب وطالبات جامعة النجاح. سكنات موثقة 100% في نابلس.",
     images: [
@@ -49,17 +49,17 @@ export const metadata: Metadata = {
         url: "/images/hero.png",
         width: 1200,
         height: 630,
-        alt: "سكّنلي - منصة سكن طلاب جامعة النجاح",
+        alt: "سكنو - منصة سكن طلاب جامعة النجاح",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "سكّنلي | منصة سكن طلاب جامعة النجاح الوطنية",
+    title: "سكنو | منصة سكن طلاب جامعة النجاح الوطنية",
     description:
       "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة في نابلس",
     images: ["/images/hero.png"],
-    creator: "@sakanly_ps",
+    creator: "@sakannu_ps",
   },
   robots: {
     index: true,

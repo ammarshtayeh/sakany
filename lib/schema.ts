@@ -80,10 +80,10 @@ export function generateOrganizationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "سكّنلي - Sakanly",
-    alternateName: "Sakany",
-    url: "https://sakanly.vercel.app",
-    logo: "https://sakanly.vercel.app/images/hero.png",
+    name: "سكنو - Sakannu",
+    alternateName: "Sakannu",
+    url: "https://sakannu.vercel.app",
+    logo: "https://sakannu.vercel.app/logo.png",
     description:
       "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة لطلاب جامعة النجاح الوطنية في نابلس",
     address: {

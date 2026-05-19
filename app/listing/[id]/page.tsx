@@ -328,7 +328,7 @@ export default function ListingDetails({
                 </a>
                 <a
                   href={`https://wa.me/${listing.ownerPhone.replace(/^0/, "970")}?text=${encodeURIComponent(
-                    `مرحباً، أنا مهتم بسكن "${listing.title}" المعلن عنه في منصة سكّنلي. هل هو متاح حالياً؟`
+                    `مرحباً، أنا مهتم بسكن "${listing.title}" المعلن عنه في منصة سكنو. هل هو متاح حالياً؟`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"

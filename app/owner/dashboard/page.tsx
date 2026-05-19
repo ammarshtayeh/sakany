@@ -107,7 +107,7 @@ export default function OwnerDashboard() {
                       لوحة المالك
                     </span>
                     <span className="block text-[8px] text-primary font-bold uppercase tracking-widest mt-0.5">
-                      Sakanly Owner
+                      Sakannu Owner
                     </span>
                   </div>
                 </div>

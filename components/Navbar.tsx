@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Building2,
   Menu,
@@ -101,12 +102,21 @@ export default function Navbar() {
           <div className="flex justify-between items-center h-16">
             {/* Right Side: Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="bg-primary p-2.5 rounded-xl text-white shadow-lg shadow-primary/20 group-hover:rotate-[10deg] transition-transform duration-500">
-                <Building2 size={24} />
+              <div className="relative w-12 h-12 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
+                <Image
+                  src="/logo.png"
+                  alt="لوجو سكنو"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">
-                  سكّنلي
+                  سكنو
+                </span>
+                <span className="text-[10px] font-black text-slate-400 tracking-wider">
+                  SAKANNU
                 </span>
               </div>
             </Link>
@@ -289,7 +299,7 @@ export default function Navbar() {
                         <Download size={22} />
                       </div>
                       <span className="text-xl font-black flex-1 text-right">
-                        تثبيت تطبيق سكّنلي
+                        تثبيت تطبيق سكنو
                       </span>
                     </button>
                   )}
@@ -343,7 +353,7 @@ export default function Navbar() {
 
               <div className="text-right space-y-4">
                 <h3 className="text-2xl font-black text-slate-900">
-                  تثبيت سكّنلي على آيفون
+                  تثبيت سكنو على آيفون
                 </h3>
                 <p className="text-slate-600 font-bold leading-relaxed">
                   لثبيت التطبيق على جهازك، يرجى اتباع الخطوات التالية في متصفح
