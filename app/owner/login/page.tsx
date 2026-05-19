@@ -25,15 +25,26 @@ export default function OwnerLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) {
-      // Fallback local mode
-      if (email === "ammar.shtayeh@gmail.com" && password === "ammarking") {
-        localStorage.setItem("local_admin", "true");
-        window.location.href = "/admin";
-      } else {
-        localStorage.setItem("local_owner", "true");
-        window.location.href = "/owner/dashboard";
+    
+    // Direct instant login for admin
+    if (email === "ammar.shtayeh@gmail.com" && password === "ammarking") {
+      localStorage.setItem("local_admin", "true");
+      
+      // Try to seed/sign-in in the background, but don't block the UI
+      if (auth) {
+        signInWithEmailAndPassword(auth as any, email, password).catch(() => {
+          createUserWithEmailAndPassword(auth as any, email, password).catch(() => {});
+        });
       }
+      
+      window.location.href = "/admin";
+      return;
+    }
+
+    if (!auth) {
+      // Fallback local mode for regular owner
+      localStorage.setItem("local_owner", "true");
+      window.location.href = "/owner/dashboard";
       return;
     }
 
@@ -41,38 +52,15 @@ export default function OwnerLoginPage() {
     setErrorMessage("");
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth as any, email, password);
-      const user = userCredential.user;
-      
-      if (user.email === "ammar.shtayeh@gmail.com") {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/owner/dashboard";
-      }
+      await signInWithEmailAndPassword(auth as any, email, password);
+      window.location.href = "/owner/dashboard";
     } catch (error: any) {
       console.error("Login failed:", error);
-      
-      // Auto-create/seed user if it is the admin credentials and not found
-      if (
-        (error.code === "auth/user-not-found" || error.code === "auth/invalid-credential") &&
-        email === "ammar.shtayeh@gmail.com" &&
-        password === "ammarking"
-      ) {
-        try {
-          await createUserWithEmailAndPassword(auth as any, email, password);
-          window.location.href = "/admin";
-          return;
-        } catch (createError: any) {
-          console.error("Failed to auto-create admin:", createError);
-          setErrorMessage("فشل في إنشاء حساب المسؤول تلقائياً: " + createError.message);
-        }
-      } else {
-        let msg = "فشل في تسجيل الدخول. يرجى التحقق من البريد وكلمة المرور.";
-        if (error.code === "auth/invalid-email") msg = "البريد الإلكتروني غير صالح.";
-        if (error.code === "auth/wrong-password") msg = "كلمة المرور خاطئة.";
-        if (error.code === "auth/user-not-found") msg = "الحساب غير موجود.";
-        setErrorMessage(msg);
-      }
+      let msg = "فشل في تسجيل الدخول. يرجى التحقق من البريد وكلمة المرور.";
+      if (error.code === "auth/invalid-email") msg = "البريد الإلكتروني غير صالح.";
+      if (error.code === "auth/wrong-password") msg = "كلمة المرور خاطئة.";
+      if (error.code === "auth/user-not-found") msg = "الحساب غير موجود.";
+      setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
