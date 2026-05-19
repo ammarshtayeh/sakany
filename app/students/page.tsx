@@ -195,7 +195,7 @@ export default function StudentsPage() {
               </motion.div>
             ))
           )}
-          {listings.length === 0 && (
+          {!isLoading && listings.length === 0 && (
             <div className="col-span-full py-40 text-center opacity-20 flex flex-col items-center">
               <Compass
                 size={80}

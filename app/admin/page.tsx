@@ -233,6 +233,15 @@ export default function AdminDashboard() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-slate-900 font-almarai">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+        <p className="text-xl font-black text-slate-500">جاري تحميل لوحة التحكم...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-slate-900 flex overflow-hidden font-almarai">
       <AnimatePresence>
