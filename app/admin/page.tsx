@@ -589,9 +589,22 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               className="animate-in fade-in duration-700"
             >
-              <h2 className="text-4xl font-black mb-10 text-slate-900">
-                نظرة <span className="text-primary">عامة</span>
-              </h2>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+                <h2 className="text-4xl font-black text-slate-900">
+                  نظرة <span className="text-primary">عامة</span>
+                </h2>
+                <button
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}/owner/submit`;
+                    navigator.clipboard.writeText(shareUrl);
+                    alert(`📋 تم نسخ رابط استمارة الملاك لمشاركته:\n${shareUrl}`);
+                  }}
+                  className="bg-primary text-white font-black text-sm px-6 py-4 rounded-2xl hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl shadow-primary/20 flex items-center gap-3 cursor-pointer"
+                >
+                  <PlusCircle size={20} />
+                  نسخ رابط استمارة الملاك 🔗
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                 {stats.map((stat, idx) => (

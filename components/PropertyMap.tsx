@@ -19,6 +19,16 @@ interface PropertyMapProps {
 }
 
 export default function PropertyMap({ lat, lng, title }: PropertyMapProps) {
+  const handleOpenInMaps = () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    if (isIOS) {
+      window.open(`http://maps.apple.com/?q=${lat},${lng}`, "_blank");
+    } else {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, "_blank");
+    }
+  };
   const position: [number, number] = [lat, lng];
 
   return (
@@ -37,13 +47,21 @@ export default function PropertyMap({ lat, lng, title }: PropertyMapProps) {
       </MapContainer>
 
       {/* Location Label Offset */}
-      <div className="absolute bottom-6 left-6 z-[40] bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl border border-slate-200 shadow-lg text-right">
-        <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
-          موقع السكن
-        </p>
-        <p className="text-sm font-black text-slate-900">
-          {title || "موقع العقار"}
-        </p>
+      <div className="absolute bottom-6 left-6 z-[40] bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-slate-200 shadow-lg text-right flex flex-col gap-2">
+        <div>
+          <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
+            موقع السكن
+          </p>
+          <p className="text-sm font-black text-slate-900">
+            {title || "موقع العقار"}
+          </p>
+        </div>
+        <button
+          onClick={handleOpenInMaps}
+          className="bg-primary text-white text-xs font-black px-4 py-2 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-primary/20 cursor-pointer"
+        >
+          افتح في الخرائط 🗺️
+        </button>
       </div>
     </div>
   );
