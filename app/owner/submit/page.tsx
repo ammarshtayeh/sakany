@@ -183,7 +183,7 @@ export default function OwnerSubmitPage() {
                 تم استلام طلبك بنجاح!
               </h2>
               <p className="text-slate-600 text-xl mb-12 leading-relaxed font-bold max-w-lg mx-auto">
-                شكراً لاختيارك <span className="text-primary">سكّني</span>.
+                شكراً لاختيارك <span className="text-primary">سكّنلي</span>.
                 عقارك الآن في طريقه للنشر! سنقوم بمراجعة البيانات والتواصل معك
                 في أقرب وقت.
               </p>
@@ -558,7 +558,7 @@ export default function OwnerSubmitPage() {
                         ملاحظة هامة
                       </h4>
                       <p className="text-primary/70 font-bold leading-relaxed">
-                        بإرسالك لهذا الطلب، أنت توافق على شروط "سكّني" لضمان
+                        بإرسالك لهذا الطلب، أنت توافق على شروط "سكّنلي" لضمان
                         نزاهة البيانات. سيتم فحص الطلب من قبل الإدارة قبل الظهور
                         للطلاب.
                       </p>

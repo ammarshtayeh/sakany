@@ -297,10 +297,10 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <span className="text-xl font-black text-slate-900 leading-none">
-                      سكّني
+                      لوحة الإدارة
                     </span>
                     <span className="block text-[8px] text-primary font-bold uppercase tracking-widest mt-0.5">
-                      Admin
+                      Sakanly Admin
                     </span>
                   </div>
                 </div>
@@ -368,10 +368,10 @@ export default function AdminDashboard() {
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-black text-slate-900 leading-none">
-                سكّني
+                لوحة الإدارة
               </span>
               <span className="text-[10px] text-primary font-bold uppercase tracking-widest mt-1">
-                Admin Panel
+                Site Administration
               </span>
             </div>
           </Link>

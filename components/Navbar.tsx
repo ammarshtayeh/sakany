@@ -9,15 +9,14 @@ import {
   Globe,
   Users,
   Search,
-  PlusCircle,
-  Calendar,
-  DollarSign,
-  ArrowRight,
   Download,
   Home,
+  LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import OwnerActionModal from "./OwnerActionModal";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -35,6 +34,7 @@ export default function Navbar() {
     useState<BeforeInstallPromptEvent | null>(null);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
 
   useEffect(() => {
     // Register Service Worker
@@ -91,10 +91,10 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-in-out ${
           scrolled
-            ? "bg-white/90 backdrop-blur-2xl border-b border-slate-200 py-3 shadow-lg shadow-slate-200/20"
-            : "bg-white/50 backdrop-blur-md py-4 sm:py-6"
+            ? "top-4 mx-auto w-[95%] max-w-7xl rounded-3xl bg-white/80 backdrop-blur-2xl border border-white/20 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)]"
+            : "top-0 w-full bg-white/0 backdrop-blur-none py-6"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -106,7 +106,7 @@ export default function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">
-                  سكّني
+                  سكّنلي
                 </span>
               </div>
             </Link>
@@ -128,12 +128,26 @@ export default function Navbar() {
 
             {/* Left Side: Actions */}
             <div className="hidden md:flex items-center gap-10">
-              <Link
-                href="/owner/submit"
+              <div className="flex items-center gap-6 border-l border-slate-200 pl-6 h-8">
+                <Link
+                  href="/owner/dashboard"
+                  className="text-slate-600 hover:text-primary font-bold transition-all text-sm"
+                >
+                  لوحة المالك
+                </Link>
+                <Link
+                  href="/admin"
+                  className="text-slate-400 hover:text-primary font-bold transition-all text-sm"
+                >
+                  الإدارة
+                </Link>
+              </div>
+              <button
+                onClick={() => setIsOwnerModalOpen(true)}
                 className="text-slate-600 hover:text-primary font-bold transition-colors underline-offset-8 hover:underline decoration-primary/30"
               >
                 عرض عقارك للطلاب
-              </Link>
+              </button>
               {deferredPrompt && (
                 <button
                   onClick={handleInstallClick}
@@ -228,6 +242,29 @@ export default function Navbar() {
                   </Link>
                 ))}
 
+                <div className="pt-4 border-t border-slate-50 mt-4 space-y-2">
+                  <Link
+                    href="/owner/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
+                  >
+                    <LayoutDashboard size={22} className="text-slate-400" />
+                    <span className="text-lg font-bold flex-1 text-right">
+                      لوحة التحكم للملاك
+                    </span>
+                  </Link>
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsOpen(false)}
+                    className="flex flex-row-reverse items-center gap-4 p-4 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all"
+                  >
+                    <Settings size={22} className="text-slate-400" />
+                    <span className="text-lg font-bold flex-1 text-right">
+                      لوحة الإدارة للموقع
+                    </span>
+                  </Link>
+                </div>
+
                 {/* PWA Install Button - Show more reliably */}
                 {(deferredPrompt ||
                   isIOS ||
@@ -252,7 +289,7 @@ export default function Navbar() {
                         <Download size={22} />
                       </div>
                       <span className="text-xl font-black flex-1 text-right">
-                        تثبيت تطبيق سكّني
+                        تثبيت تطبيق سكّنلي
                       </span>
                     </button>
                   )}
@@ -260,13 +297,15 @@ export default function Navbar() {
 
               {/* Footer Button */}
               <div className="p-6 border-t border-slate-50">
-                <Link
-                  href="/owner/submit"
-                  onClick={() => setIsOpen(false)}
+                <button
+                  onClick={() => {
+                    setIsOwnerModalOpen(true);
+                    setIsOpen(false);
+                  }}
                   className="flex items-center justify-center w-full py-5 bg-primary text-white rounded-[1.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   أضف سكنك الآن
-                </Link>
+                </button>
               </div>
             </motion.div>
           </>
@@ -304,7 +343,7 @@ export default function Navbar() {
 
               <div className="text-right space-y-4">
                 <h3 className="text-2xl font-black text-slate-900">
-                  تثبيت سكّني على آيفون
+                  تثبيت سكّنلي على آيفون
                 </h3>
                 <p className="text-slate-600 font-bold leading-relaxed">
                   لثبيت التطبيق على جهازك، يرجى اتباع الخطوات التالية في متصفح
@@ -346,6 +385,11 @@ export default function Navbar() {
           </div>
         )}
       </AnimatePresence>
+
+      <OwnerActionModal
+        isOpen={isOwnerModalOpen}
+        onClose={() => setIsOwnerModalOpen(false)}
+      />
     </>
   );
 }

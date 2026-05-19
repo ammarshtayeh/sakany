@@ -1,7 +1,8 @@
 "use client";
 
-import { use } from "react";
-import { mockListings } from "@/data/mockData";
+import { use, useState, useEffect } from "react";
+import { mockListings, Listing } from "@/data/mockData";
+import { getListingById, addListingReview } from "@/lib/firestore-service";
 import {
   Building2,
   MapPin,
@@ -27,6 +28,9 @@ import { motion } from "framer-motion";
 
 import Navbar from "@/components/Navbar";
 import ListingCard from "@/components/ListingCard";
+import ReviewsSection from "@/components/ReviewsSection";
+import AddReviewForm from "@/components/AddReviewForm";
+import { generateListingSchema } from "@/lib/schema";
 import dynamic from "next/dynamic";
 
 const PropertyMap = dynamic(() => import("@/components/PropertyMap"), {
@@ -44,7 +48,50 @@ export default function ListingDetails({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const listing = mockListings.find((l) => l.id === id);
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadListing() {
+      setIsLoading(true);
+      const data = await getListingById(id);
+      setListing(data);
+      setIsLoading(false);
+    }
+    loadListing();
+  }, [id]);
+
+  const handleReviewSubmit = async (newReviewData: {
+    userName: string;
+    rating: number;
+    comment: string;
+  }) => {
+    if (!listing) return;
+    try {
+      const addedReview = await addListingReview(listing.id, newReviewData);
+      setListing((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          reviews: [...(prev.reviews || []), addedReview],
+        };
+      });
+    } catch (error) {
+      console.error("Failed to add review:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20 text-slate-900">
+        <Navbar />
+        <main className="pt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[50vh]">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+          <p className="text-xl font-black text-slate-500">جاري تحميل تفاصيل السكن...</p>
+        </main>
+      </div>
+    );
+  }
 
   if (!listing) return notFound();
 
@@ -53,8 +100,20 @@ export default function ListingDetails({
     .filter((l) => l.category === listing.category && l.id !== listing.id)
     .slice(0, 3);
 
+  const averageRating = listing.reviews?.length
+    ? listing.reviews.reduce((acc, r) => acc + r.rating, 0) /
+      listing.reviews.length
+    : 0;
+
+  const listingSchema = generateListingSchema(listing);
+
   return (
     <div className="min-h-screen bg-background pb-20 text-slate-900">
+      {/* JSON-LD Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(listingSchema) }}
+      />
       <Navbar />
 
       <main className="pt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -268,7 +327,11 @@ export default function ListingDetails({
                   اتصل الآن
                 </a>
                 <a
-                  href={`https://wa.me/${listing.ownerPhone.replace("0", "970")}`}
+                  href={`https://wa.me/${listing.ownerPhone.replace(/^0/, "970")}?text=${encodeURIComponent(
+                    `مرحباً، أنا مهتم بسكن "${listing.title}" المعلن عنه في منصة سكّنلي. هل هو متاح حالياً؟`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-4 py-5 bg-white/10 border border-white/20 text-white rounded-[1.5rem] font-black text-xl hover:bg-white/20 transition-all"
                 >
                   <MessageSquare size={28} />
@@ -278,111 +341,12 @@ export default function ListingDetails({
             </div>
 
             {/* Reviews Section */}
-            <div className="mt-12 bg-white border border-slate-200 rounded-[3rem] p-10 shadow-xl">
-              <div className="flex justify-between items-center mb-10">
-                <h3 className="text-3xl font-black text-slate-900 flex items-center gap-4">
-                  <div className="w-10 h-1 bg-primary rounded-full"></div>
-                  آراء الطلاب
-                </h3>
-                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
-                  <span className="text-2xl font-black text-primary">
-                    {listing.reviews && listing.reviews.length > 0
-                      ? (
-                          listing.reviews.reduce(
-                            (acc, r) => acc + r.rating,
-                            0,
-                          ) / listing.reviews.length
-                        ).toFixed(1)
-                      : "0.0"}
-                  </span>
-                  <div className="flex text-primary">{"★".repeat(5)}</div>
-                </div>
-              </div>
-
-              <div className="space-y-8 mb-12">
-                {listing.reviews &&
-                  listing.reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 relative group hover:border-primary/20 transition-all"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl">
-                            {review.userName[0]}
-                          </div>
-                          <div>
-                            <p className="text-slate-900 font-black">
-                              {review.userName}
-                            </p>
-                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
-                              {review.date}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <span
-                              key={star}
-                              className={
-                                star <= review.rating
-                                  ? "text-primary"
-                                  : "text-slate-200"
-                              }
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-slate-600 font-bold leading-relaxed pr-2">
-                        "{review.comment}"
-                      </p>
-                    </div>
-                  ))}
-                {(!listing.reviews || listing.reviews.length === 0) && (
-                  <div className="py-10 text-center opacity-30 text-slate-400">
-                    <MessageSquare size={48} className="mx-auto mb-4" />
-                    <p className="font-bold">
-                      لا توجد مراجعات حالياً. كن أول من يكتب!
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Add Review Form */}
-              <div className="pt-10 border-t border-slate-100">
-                <h4 className="text-xl font-black text-slate-900 mb-6">
-                  أضف تقييمك
-                </h4>
-                <form
-                  className="space-y-6"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    alert("شكراً لتقييمك! سيتم نشره بعد المراجعة.");
-                  }}
-                >
-                  <div className="flex gap-4 mb-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        className="text-3xl text-slate-200 hover:text-primary transition-colors"
-                      >
-                        ★
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    placeholder="اكتب تجربتك هنا..."
-                    rows={4}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] px-8 py-6 focus:border-primary outline-none transition-all font-bold text-slate-900 shadow-inner"
-                  ></textarea>
-                  <button className="w-full bg-premium-gradient text-white py-5 rounded-[1.5rem] font-black text-xl shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    نشر التقييم
-                  </button>
-                </form>
-              </div>
+            <div className="mt-12 space-y-8">
+              <ReviewsSection
+                reviews={listing.reviews || []}
+                averageRating={averageRating}
+              />
+              <AddReviewForm listingId={listing.id} onSubmit={handleReviewSubmit} />
             </div>
           </motion.div>
         </div>

@@ -17,6 +17,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import StarRating from "./StarRating";
 
 interface ListingCardProps {
   listing: Listing;
@@ -25,14 +26,20 @@ interface ListingCardProps {
 export default function ListingCard({ listing }: ListingCardProps) {
   const isStudentesses = listing.category === "studentesses";
 
+  // Calculate average rating
+  const averageRating = listing.reviews?.length
+    ? listing.reviews.reduce((acc, r) => acc + r.rating, 0) /
+      listing.reviews.length
+    : 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      whileHover={{ y: -10 }}
-      transition={{ duration: 0.5 }}
-      className="group bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all shadow-xl shadow-slate-200/50"
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="group bg-white border border-slate-200/60 rounded-[2.5rem] overflow-hidden hover:border-primary/40 transition-all shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-primary/10"
     >
       <Link href={`/listing/${listing.id}`}>
         <div className="relative h-64 overflow-hidden">
@@ -84,6 +91,19 @@ export default function ListingCard({ listing }: ListingCardProps) {
             <MapPin size={14} className="text-primary" />
             <span className="line-clamp-1">{listing.location}</span>
           </div>
+
+          {/* Rating */}
+          {averageRating > 0 && (
+            <div className="mb-3">
+              <StarRating
+                rating={averageRating}
+                readonly
+                size={16}
+                showCount
+                count={listing.reviews?.length || 0}
+              />
+            </div>
+          )}
 
           <h3 className="text-lg md:text-xl font-black text-slate-900 mb-4 line-clamp-1 group-hover:text-primary transition-colors">
             {listing.title}

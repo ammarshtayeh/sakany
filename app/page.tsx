@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,13 +15,32 @@ import {
   UserPlus,
   GraduationCap,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import { mockListings } from "@/data/mockData";
 import ListingCard from "@/components/ListingCard";
+import OwnerActionModal from "@/components/OwnerActionModal";
+import {
+  generateOrganizationSchema,
+  generateWebsiteSchema,
+} from "@/lib/schema";
 
 export default function Home() {
+  const organizationSchema = generateOrganizationSchema();
+  const websiteSchema = generateWebsiteSchema();
+  const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen">
+      {/* JSON-LD Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
       <Navbar />
 
       {/* Hero Section */}
@@ -28,21 +50,51 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-right">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-primary text-xs font-bold mb-6 border border-orange-500/20">
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center lg:text-right"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-primary text-xs font-bold mb-6 border border-orange-500/20"
+              >
                 <GraduationCap size={14} />
                 <span>المنصة المعتمدة لطلاب جامعة النجاح الوطنية - نابلس</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-tight mb-6 text-slate-900 text-balance">
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                viewport={{ once: true }}
+                className="text-4xl md:text-5xl lg:text-7xl font-black leading-tight mb-6 text-slate-900 text-balance"
+              >
                 استأجر سكنك في <br />
                 <span className="text-gradient">نابلس</span> بضغطة زر
-              </h1>
-              <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto lg:mr-0 leading-relaxed font-bold">
-                سكّني هي أول منصة فلسطينية متخصصة في توفير السكنات الطلابية
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                viewport={{ once: true }}
+                className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto lg:mr-0 leading-relaxed font-bold"
+              >
+                سكّنلي هي أول منصة فلسطينية متخصصة في توفير السكنات الطلابية
                 الآمنة لطلاب جامعة النجاح. نوفر لك خيارات متنوعة بالقرب من الحرم
                 الجديد، الحرم القديم، والأكاديمية.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                viewport={{ once: true }}
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              >
                 <Link
                   href="/students"
                   className="bg-premium-gradient text-white px-8 py-4 rounded-xl text-lg font-black shadow-2xl shadow-primary/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
@@ -50,16 +102,22 @@ export default function Home() {
                   تصفح السكنات المتاحة
                   <ArrowRight size={20} />
                 </Link>
-                <Link
-                  href="/owner/submit"
+                <button
+                  onClick={() => setIsOwnerModalOpen(true)}
                   className="bg-white border border-slate-200 text-slate-700 px-8 py-4 rounded-xl text-lg font-black hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
-                  عرض عقارك للطلاب
-                  <UserPlus size={20} />
-                </Link>
-              </div>
+                  عرض سكنك الآن
+                  <Phone size={20} />
+                </button>
+              </motion.div>
 
-              <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 opacity-60 text-slate-500">
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 0.6 }}
+                transition={{ delay: 1 }}
+                viewport={{ once: true }}
+                className="mt-12 flex items-center justify-center lg:justify-start gap-8 opacity-60 text-slate-500"
+              >
                 <div className="flex flex-col items-center lg:items-end">
                   <span className="text-2xl font-bold">500+</span>
                   <span className="text-xs uppercase tracking-tighter">
@@ -73,10 +131,16 @@ export default function Home() {
                     عقار في نابلس
                   </span>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="relative lg:h-[650px] md:h-[500px] h-[350px] rounded-[2rem] lg:rounded-[3rem] overflow-hidden shadow-2xl border border-white/5">
+            <motion.div
+              initial={{ opacity: 0, x: -50, scale: 0.9 }}
+              whileInView={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              viewport={{ once: true }}
+              className="relative lg:h-[650px] md:h-[500px] h-[350px] rounded-[2rem] lg:rounded-[3rem] overflow-hidden shadow-2xl border border-white/5"
+            >
               <Image
                 src="/images/hero.png"
                 alt="Modern Student Housing in Nablus"
@@ -100,7 +164,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -116,7 +180,7 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg px-4 font-bold">
-              سواء كنت تدرس في الحرم الجديد أو القديم، سكّني توفر لك المسكن
+              سواء كنت تدرس في الحرم الجديد أو القديم، سكّنلي توفر لك المسكن
               الأقرب لكليتك بأسعار منافسة وبالشيكل.
             </p>
           </div>
@@ -232,7 +296,191 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Property Owner Section - RESTORED */}
+      {/* Stats Section */}
+      <section className="py-20 bg-slate-900 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500 blur-[120px] rounded-full"></div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+            {[
+              { label: "طالب يبحث عن سكن", value: "2,500+", icon: Users },
+              { label: "سكن موثق", value: "180+", icon: ShieldCheck },
+              { label: "منطقة في نابلس", value: "12", icon: MapPin },
+              { label: "نسبة رضا الطلاب", value: "98%", icon: GraduationCap },
+            ].map((stat, idx) => (
+              <div key={idx} className="text-center group">
+                <div className="inline-flex p-4 rounded-2xl bg-white/5 border border-white/10 mb-6 group-hover:scale-110 transition-transform">
+                  <stat.icon className="text-primary w-8 h-8" />
+                </div>
+                <div className="text-4xl md:text-5xl font-black text-white mb-2 italic">
+                  {stat.value}
+                </div>
+                <div className="text-slate-400 font-bold text-sm uppercase tracking-wide">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6">
+              كيف تجد سكنك في <span className="text-gradient">3 خطوات؟</span>
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto font-bold text-lg">
+              صممنا العملية لتكون أسرع وأسهل ما يمكن لطلاب جامعة النجاح
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 relative">
+            {/* Connection Line */}
+            <div className="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0"></div>
+
+            {[
+              {
+                title: "ابحث وقارن",
+                desc: "تصفح مئات السكنات الموثقة في نابلس وقارن بين الصور، الخدمات والأسعار.",
+                step: "01",
+              },
+              {
+                title: "اتصل مباشرة",
+                desc: "تواصل مع صاحب السكن أو فريقنا عبر الواتساب أو الهاتف بدون وسطاء.",
+                step: "02",
+              },
+              {
+                title: "احجز وانتقل",
+                desc: "قم بمعاينة السكن على أرض الواقع وأتمم إجراءات الحجز بكل سهولة.",
+                step: "03",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="relative z-10 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/20 hover:border-primary/20 transition-all group"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-black mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                  {item.step}
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-4">
+                  {item.title}
+                </h3>
+                <p className="text-slate-500 font-bold leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-32 bg-slate-50 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6">
+              ماذا يقول <span className="text-gradient">طلابنا؟</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                name: "أحمد منصور",
+                major: "هندسة حاسوب",
+                text: "أفضل منصة وفرت علي تعب البحث في شوارع رفيديا. الصور مطابقة تماماً للواقع والتعامل كان جداً راقي.",
+              },
+              {
+                name: "سارة العبد",
+                major: "طب بشري",
+                text: "كطالبة مغتربة، كان يهمني جداً عامل الأمان. سكّنلي ساعدتني ألاقي سكن مريح وقريب جداً من المجمع الطبي.",
+              },
+              {
+                name: "محمد خالد",
+                major: "حقوق",
+                text: "سهولة التواصل مع أصحاب السكنات ميزة خرافية. حجزت سكني وأنا لسا في البيت قبل ما يبدأ الفصل.",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all"
+              >
+                <div className="flex gap-1 text-orange-500 mb-6">
+                  {Array(5)
+                    .fill(0)
+                    .map((_, i) => (
+                      <span key={i}>★</span>
+                    ))}
+                </div>
+                <p className="text-slate-700 font-bold italic mb-8 leading-relaxed">
+                  "{item.text}"
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-black text-primary">
+                    {item.name[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-900">{item.name}</h4>
+                    <p className="text-xs text-slate-500 font-bold">
+                      {item.major}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-32 bg-white">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-black text-slate-900 mb-4 italic">
+              الأسئلة الشائعة
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: "هل خدمات الموقع مجانية للطلاب؟",
+                a: "نعم، تصفح السكنات والتواصل مع أصحابها مجاني بالكامل للطلاب.",
+              },
+              {
+                q: "كيف أتأكد أن الصور مطابقة للواقع؟",
+                a: "فريق سكّنلي يقوم بمعاينة وتصوير أغلب العقارات المدرجة لضمان المصداقية.",
+              },
+              {
+                q: "هل يوجد سكنات قريبة من الحرم الجديد؟",
+                a: "أكيد، لدينا قسم خاص لسكنات شارع تونس والأكاديمية القريبة جداً من الحرم الجديد.",
+              },
+            ].map((item, idx) => (
+              <details
+                key={idx}
+                className="group border border-slate-200 rounded-3xl p-6 bg-slate-50 open:bg-white open:shadow-xl transition-all"
+              >
+                <summary className="font-black text-lg text-slate-900 cursor-pointer list-none flex justify-between items-center capitalize">
+                  {item.q}
+                  <ArrowRight
+                    size={20}
+                    className="group-open:rotate-90 transition-transform"
+                  />
+                </summary>
+                <p className="text-slate-600 mt-4 leading-relaxed font-bold">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Property Owner Section */}
       <section id="owner-contact" className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 -skew-y-3 origin-right"></div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 relative z-10">
@@ -254,15 +502,15 @@ export default function Home() {
                   الطلاب من جامعة النجاح ونقوم بتسويق عقارك بأفضل صورة احترافية.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-5">
-                  <Link
-                    href="https://wa.me/970590000000"
+                  <button
+                    onClick={() => setIsOwnerModalOpen(true)}
                     className="bg-premium-gradient text-white px-10 py-5 rounded-2xl font-black text-xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 text-center"
                   >
                     عرض سكنك الآن
                     <ArrowRight size={24} />
-                  </Link>
+                  </button>
                   <Link
-                    href="/owner/submit"
+                    href="/owner/login"
                     className="bg-white border border-slate-200 text-slate-700 px-10 py-5 rounded-2xl font-black text-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-center shadow-sm"
                   >
                     دخول لوحة التحكم
@@ -334,7 +582,7 @@ export default function Home() {
                   <Building2 size={32} />
                 </div>
                 <span className="text-3xl font-black text-slate-900">
-                  سكّني
+                  سكّنلي
                 </span>
               </div>
               <p className="text-slate-500 max-w-sm mb-10 leading-relaxed text-lg">
@@ -404,7 +652,7 @@ export default function Home() {
                   شارع رفيديا الرئيسي
                 </li>
                 <li className="flex items-center gap-4 text-sm">
-                  <Phone size={20} className="text-primary" /> 9720595537190
+                  <Phone size={20} className="text-primary" /> 972595537190
                 </li>
                 <li className="flex items-center gap-4 text-sm">
                   <Mail size={20} className="text-primary" />{" "}
@@ -415,12 +663,17 @@ export default function Home() {
           </div>
           <div className="pt-10 border-t border-slate-200 text-center text-sm text-slate-500 font-bold">
             <p>
-              © {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة سكّني
+              © {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة سكّنلي
               وصاحبها عمار اشتية - نابلس، فلسطين
             </p>
           </div>
         </div>
       </footer>
+
+      <OwnerActionModal
+        isOpen={isOwnerModalOpen}
+        onClose={() => setIsOwnerModalOpen(false)}
+      />
     </div>
   );
 }

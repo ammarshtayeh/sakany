@@ -2,13 +2,78 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "سكّني | منصة سكن الطلاب والطالبات",
-  description: "المنصة الأولى لربط الطلاب بأصحاب العقارات في أرقى السكنات",
+  title: "سكّنلي | منصة سكن طلاب جامعة النجاح الوطنية في نابلس",
+  description:
+    "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة لطلاب وطالبات جامعة النجاح في نابلس. سكنات موثقة بالقرب من الحرم الجديد والقديم والأكاديمية.",
+  keywords: [
+    "سكن طلاب نابلس",
+    "سكن طالبات نابلس",
+    "جامعة النجاح",
+    "سكن جامعة النجاح",
+    "شقق للإيجار نابلس",
+    "سكن طلابي فلسطين",
+    "الحرم الجديد",
+    "الحرم القديم",
+    "رفيديا",
+    "شارع تونس",
+    "سكن آمن للطالبات",
+    "استوديو للطلاب",
+    "غرف للإيجار نابلس",
+    "سكنلي",
+    "sakanly",
+  ],
+  authors: [{ name: "سكّنلي - Sakanly" }],
+  creator: "عمار اشتية",
+  publisher: "سكّنلي",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "سكّني",
+    title: "سكّنلي",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ar_PS",
+    url: "https://sakanly.vercel.app",
+    siteName: "سكّنلي - منصة سكن طلاب جامعة النجاح",
+    title: "سكّنلي | منصة سكن طلاب جامعة النجاح الوطنية في نابلس",
+    description:
+      "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة لطلاب وطالبات جامعة النجاح. سكنات موثقة 100% في نابلس.",
+    images: [
+      {
+        url: "/images/hero.png",
+        width: 1200,
+        height: 630,
+        alt: "سكّنلي - منصة سكن طلاب جامعة النجاح",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "سكّنلي | منصة سكن طلاب جامعة النجاح الوطنية",
+    description:
+      "أول منصة فلسطينية متخصصة في توفير السكنات الطلابية الآمنة في نابلس",
+    images: ["/images/hero.png"],
+    creator: "@sakanly_ps",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "google-site-verification-code", // سيتم تحديثه لاحقاً
   },
 };
 

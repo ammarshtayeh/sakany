@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { mockRoommatePosts } from "@/data/mockData";
+import { useState, useEffect } from "react";
+import { RoommatePost } from "@/data/mockData";
+import { getRoommatePosts, addRoommatePost } from "@/lib/firestore-service";
 import {
   Users,
   Search,
@@ -18,8 +19,79 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function RoommatePage() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [posts, setPosts] = useState<RoommatePost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredPosts = mockRoommatePosts.filter(
+  // Form states
+  const [fullName, setFullName] = useState("");
+  const [gender, setGender] = useState<"male" | "female">("male");
+  const [title, setTitle] = useState("");
+  const [preferredLocation, setPreferredLocation] = useState("");
+  const [budget, setBudget] = useState("");
+  const [phone, setPhone] = useState("");
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    async function loadPosts() {
+      setIsLoading(true);
+      try {
+        const data = await getRoommatePosts();
+        setPosts(data);
+      } catch (error) {
+        console.error("Failed to load roommate posts:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadPosts();
+  }, []);
+
+  const handlePostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const newPostData = {
+        userName: fullName,
+        userGender: gender,
+        title,
+        description,
+        preferredLocation,
+        priceRange: budget,
+        contactPhone: phone,
+      };
+      
+      const newId = await addRoommatePost(newPostData);
+      
+      // Update local state immediately so user sees it
+      const addedPost: RoommatePost = {
+        id: newId,
+        ...newPostData,
+        date: new Date().toISOString().split("T")[0],
+      };
+      
+      setPosts((prev) => [addedPost, ...prev]);
+      
+      // Reset form
+      setFullName("");
+      setGender("male");
+      setTitle("");
+      setPreferredLocation("");
+      setBudget("");
+      setPhone("");
+      setDescription("");
+      
+      setIsPostModalOpen(false);
+      alert("تم نشر طلبك لشراكة السكن بنجاح! 🎉");
+    } catch (error) {
+      console.error("Error submitting roommate post:", error);
+      alert("حدث خطأ أثناء النشر. الرجاء المحاولة مرة أخرى.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredPosts = posts.filter(
     (post) =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.preferredLocation
@@ -78,79 +150,89 @@ export default function RoommatePage() {
           />
         </div>
 
+        {/* Loading Spinner */}
+        {isLoading && (
+          <div className="py-20 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-500 font-bold">جاري تحميل إعلانات رفقاء السكن...</p>
+          </div>
+        )}
+
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredPosts.map((post, idx) => (
-              <motion.div
-                key={post.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="bg-white border border-slate-200 rounded-[3rem] p-8 hover:border-accent/30 transition-all group shadow-sm"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <div
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${post.userGender === "male" ? "bg-blue-600/20 text-blue-400" : "bg-pink-600/20 text-pink-400"}`}
-                  >
-                    {post.userGender === "male"
-                      ? "Male Student"
-                      : "Female Student"}
-                  </div>
-                  <div className="text-slate-700 font-bold text-xs flex items-center gap-2">
-                    <Calendar size={14} />
-                    {post.date}
-                  </div>
-                </div>
-
-                <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-accent transition-colors">
-                  {post.title}
-                </h3>
-                <p className="text-slate-600 font-bold leading-relaxed mb-8 line-clamp-3 italic">
-                  "{post.description}"
-                </p>
-
-                <div className="space-y-4 border-t border-white/5 pt-8">
-                  <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                    <MapPin size={18} className="text-accent" />
-                    {post.preferredLocation}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                    <DollarSign size={18} className="text-accent" />
-                    ميزانية: {post.priceRange}
-                  </div>
-                </div>
-
-                <div className="mt-10 pt-6 flex items-center justify-between border-t border-white/5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-900 uppercase text-xl">
-                      {post.userName[0]}
+        {!isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              {filteredPosts.map((post, idx) => (
+                <motion.div
+                  key={post.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.5, delay: idx * 0.05 }}
+                  className="bg-white border border-slate-200 rounded-[3rem] p-8 hover:border-accent/30 transition-all group shadow-sm"
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <div
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${post.userGender === "male" ? "bg-blue-600/20 text-blue-400" : "bg-pink-600/20 text-pink-400"}`}
+                    >
+                      {post.userGender === "male"
+                        ? "Male Student"
+                        : "Female Student"}
                     </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-900">
-                        {post.userName}
-                      </p>
-                      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                        Student
-                      </p>
+                    <div className="text-slate-700 font-bold text-xs flex items-center gap-2">
+                      <Calendar size={14} />
+                      {post.date}
                     </div>
                   </div>
-                  <a
-                    href={`tel:${post.contactPhone}`}
-                    className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg shadow-accent/20"
-                  >
-                    <Phone size={20} />
-                  </a>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+
+                  <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-accent transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-slate-600 font-bold leading-relaxed mb-8 line-clamp-3 italic">
+                    "{post.description}"
+                  </p>
+
+                  <div className="space-y-4 border-t border-slate-100 pt-8">
+                    <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                      <MapPin size={18} className="text-accent" />
+                      {post.preferredLocation}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                      <DollarSign size={18} className="text-accent" />
+                      ميزانية: {post.priceRange} شيكل/الشهر
+                    </div>
+                  </div>
+
+                  <div className="mt-10 pt-6 flex items-center justify-between border-t border-slate-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-900 uppercase text-xl">
+                        {post.userName[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900">
+                          {post.userName}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                          Student
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={`tel:${post.contactPhone}`}
+                      className="w-12 h-12 rounded-2xl bg-accent text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg shadow-accent/20"
+                    >
+                      <Phone size={20} />
+                    </a>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredPosts.length === 0 && (
+        {!isLoading && filteredPosts.length === 0 && (
           <div className="py-40 text-center opacity-20 flex flex-col items-center">
             <Users size={80} className="mb-6 animate-pulse text-slate-400" />
             <p className="text-3xl font-black text-slate-900">
@@ -190,11 +272,7 @@ export default function RoommatePage() {
 
                 <form
                   className="space-y-6"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setIsPostModalOpen(false);
-                    alert("تم النشر بنجاح! سيتم فحص طلبك.");
-                  }}
+                  onSubmit={handlePostSubmit}
                 >
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -203,6 +281,8 @@ export default function RoommatePage() {
                       </label>
                       <input
                         type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
                         placeholder="مثلاً: أحمد محمود"
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold"
                         required
@@ -212,7 +292,11 @@ export default function RoommatePage() {
                       <label className="text-xs font-black text-slate-500 mr-2 uppercase tracking-widest">
                         الجنس
                       </label>
-                      <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold appearance-none">
+                      <select 
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value as "male" | "female")}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold appearance-none"
+                      >
                         <option value="male">ذكر</option>
                         <option value="female">أنثى</option>
                       </select>
@@ -225,7 +309,23 @@ export default function RoommatePage() {
                     </label>
                     <input
                       type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
                       placeholder="مثلاً: أبحث عن شريك في شارع رفيديا"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-500 mr-2 uppercase tracking-widest">
+                      الموقع المفضل أو الحالي
+                    </label>
+                    <input
+                      type="text"
+                      value={preferredLocation}
+                      onChange={(e) => setPreferredLocation(e.target.value)}
+                      placeholder="مثلاً: رفيديا / بالقرب من الأكاديمية"
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold"
                       required
                     />
@@ -234,10 +334,12 @@ export default function RoommatePage() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-xs font-black text-slate-500 mr-2 uppercase tracking-widest">
-                        الميزانية (شيكل)
+                        الميزانية (شيكل شهرياً)
                       </label>
                       <input
                         type="text"
+                        value={budget}
+                        onChange={(e) => setBudget(e.target.value)}
                         placeholder="مثلاً: 500-800"
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold"
                         required
@@ -245,10 +347,12 @@ export default function RoommatePage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black text-slate-500 mr-2 uppercase tracking-widest">
-                        رقم الهاتف
+                        رقم الهاتف للتواصل
                       </label>
                       <input
                         type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         placeholder="059xxxxxxx"
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold"
                         required
@@ -258,10 +362,12 @@ export default function RoommatePage() {
 
                   <div className="space-y-2">
                     <label className="text-xs font-black text-slate-500 mr-2 uppercase tracking-widest">
-                      تفاصيل إضافية
+                      تفاصيل إضافية عن شروط السكن
                     </label>
                     <textarea
-                      placeholder="اكتب قليلاً عن نفسك وما تبحث عنه..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="اكتب قليلاً عن نفسك وما تبحث عنه (مثل: الالتزام بالهدوء، غير مدخن...)"
                       rows={4}
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:border-accent text-slate-900 outline-none transition-all font-bold"
                       required
@@ -270,9 +376,17 @@ export default function RoommatePage() {
 
                   <button
                     type="submit"
-                    className="w-full bg-accent py-6 rounded-2xl font-black text-xl shadow-2xl shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-white"
+                    disabled={isSubmitting}
+                    className="w-full bg-accent py-6 rounded-2xl font-black text-xl shadow-2xl shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-white disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    نشر الإعلان الآن
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        جاري النشر...
+                      </>
+                    ) : (
+                      "نشر الإعلان الآن"
+                    )}
                   </button>
                 </form>
               </motion.div>
