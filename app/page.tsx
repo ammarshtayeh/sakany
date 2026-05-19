@@ -578,13 +578,17 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-16 mb-20">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-8">
-                <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-1 shadow-sm">
+                <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm">
                   <Image
                     src="/logo.png"
                     alt="لوجو سكنو"
-                    width={48}
-                    height={48}
-                    className="object-contain"
+                    width={143}
+                    height={78}
+                    className="max-w-none absolute"
+                    style={{
+                      top: "-3px",
+                      left: "-44px",
+                    }}
                   />
                 </div>
                 <div className="flex flex-col">

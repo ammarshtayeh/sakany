@@ -102,13 +102,17 @@ export default function Navbar() {
           <div className="flex justify-between items-center h-16">
             {/* Right Side: Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-16 h-16 overflow-hidden rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
+              <div className="relative w-16 h-16 overflow-hidden rounded-2xl bg-white border border-slate-100 group-hover:rotate-[10deg] transition-transform duration-500">
                 <Image
                   src="/logo.png"
                   alt="لوجو سكنو"
-                  width={56}
-                  height={56}
-                  className="object-contain"
+                  width={164}
+                  height={89}
+                  className="max-w-none absolute"
+                  style={{
+                    top: "-4px",
+                    left: "-50px",
+                  }}
                 />
               </div>
               <div className="flex flex-col">

@@ -35,13 +35,17 @@ export default function OwnerLoginPage() {
 
         <div className="relative z-10 max-w-lg text-right">
           <Link href="/" className="inline-flex items-center gap-4 mb-12 group">
-            <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-1 shadow-sm group-hover:rotate-12 transition-transform">
+            <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm group-hover:rotate-12 transition-transform">
               <Image
                 src="/logo.png"
                 alt="لوجو سكنو"
-                width={48}
-                height={48}
-                className="object-contain"
+                width={143}
+                height={78}
+                className="max-w-none absolute"
+                style={{
+                  top: "-3px",
+                  left: "-44px",
+                }}
               />
             </div>
             <div className="flex flex-col text-right">
@@ -89,13 +93,17 @@ export default function OwnerLoginPage() {
               href="/"
               className="md:hidden inline-flex items-center gap-3 mb-8"
             >
-              <div className="relative w-10 h-10 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 shadow-sm">
+              <div className="relative w-10 h-10 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm">
                 <Image
                   src="/logo.png"
                   alt="لوجو سكنو"
-                  width={32}
-                  height={32}
-                  className="object-contain"
+                  width={102}
+                  height={56}
+                  className="max-w-none absolute"
+                  style={{
+                    top: "-2px",
+                    left: "-31px",
+                  }}
                 />
               </div>
               <div className="flex flex-col text-right">
