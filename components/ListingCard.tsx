@@ -39,7 +39,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
       viewport={{ once: true }}
       whileHover={{ y: -8, scale: 1.02 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group bg-white border border-slate-200/60 rounded-[2.5rem] overflow-hidden hover:border-primary/40 transition-all shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-primary/10"
+      className={`group bg-white border border-slate-200/60 rounded-[2.5rem] overflow-hidden hover:border-primary/40 transition-all shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-primary/10 ${
+        isStudentesses ? "theme-pink" : ""
+      }`}
     >
       <Link href={`/listing/${listing.id}`}>
         <div className="relative h-64 overflow-hidden">

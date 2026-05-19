@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "./firebase";
-import { Listing, mockListings, mockRoommatePosts, RoommatePost, Review } from "@/data/mockData";
+import { Listing, mockListings, mockRoommatePosts, RoommatePost, Review, Ad, mockAds } from "@/data/mockData";
 
 export const COLLECTION_NAME = "listings";
 export const ROOMMATE_COLLECTION_NAME = "roommates";
@@ -321,5 +321,139 @@ export async function uploadImage(file: File): Promise<string> {
   } catch (error) {
     console.error("Error uploading image:", error);
     throw error;
+  }
+}
+
+export const ADS_COLLECTION_NAME = "ads";
+
+// Get active ads
+export async function getAds(): Promise<Ad[]> {
+  const getMock = () => {
+    if (typeof window !== "undefined") {
+      const local = localStorage.getItem("local_ads");
+      if (local) {
+        return JSON.parse(local).filter((ad: Ad) => ad.isActive);
+      }
+    }
+    return mockAds.filter((ad) => ad.isActive);
+  };
+
+  if (!db) return getMock();
+
+  try {
+    const q = query(collection(db, ADS_COLLECTION_NAME), where("isActive", "==", true));
+    const querySnapshot = await getDocs(q);
+    const dbAds = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Ad[];
+
+    if (dbAds.length > 0) return dbAds;
+    return getMock();
+  } catch (error) {
+    console.error("Error fetching active ads, using fallback:", error);
+    return getMock();
+  }
+}
+
+// Get all ads (for admin panel)
+export async function getAllAds(): Promise<Ad[]> {
+  const getMock = () => {
+    if (typeof window !== "undefined") {
+      const local = localStorage.getItem("local_ads");
+      if (local) {
+        return JSON.parse(local);
+      }
+      localStorage.setItem("local_ads", JSON.stringify(mockAds));
+    }
+    return mockAds;
+  };
+
+  if (!db) return getMock();
+
+  try {
+    const querySnapshot = await getDocs(collection(db, ADS_COLLECTION_NAME));
+    const dbAds = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Ad[];
+
+    if (dbAds.length > 0) return dbAds;
+    return getMock();
+  } catch (error) {
+    console.error("Error fetching all ads, using fallback:", error);
+    return getMock();
+  }
+}
+
+// Add a new ad
+export async function addAd(ad: Omit<Ad, "id">): Promise<string> {
+  const newId = `ad_${Date.now()}`;
+  const newAd = { ...ad, id: newId };
+
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_ads");
+    const current = local ? JSON.parse(local) : [...mockAds];
+    localStorage.setItem("local_ads", JSON.stringify([newAd, ...current]));
+  }
+
+  if (!db) return newId;
+
+  try {
+    const docRef = await addDoc(collection(db, ADS_COLLECTION_NAME), {
+      ...ad,
+      createdAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding ad to Firestore:", error);
+    return newId;
+  }
+}
+
+// Update ad status/details
+export async function updateAd(id: string, updates: Partial<Ad>): Promise<void> {
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_ads");
+    const current = local ? JSON.parse(local) : [...mockAds];
+    const updated = current.map((ad: Ad) => (ad.id === id ? { ...ad, ...updates } : ad));
+    localStorage.setItem("local_ads", JSON.stringify(updated));
+  }
+
+  if (!db) return;
+
+  try {
+    const adRef = doc(db, ADS_COLLECTION_NAME, id);
+    const snap = await getDoc(adRef);
+    if (snap.exists()) {
+      await updateDoc(adRef, {
+        ...updates,
+        updatedAt: Timestamp.now(),
+      });
+    }
+  } catch (error) {
+    console.error("Error updating ad in Firestore:", error);
+  }
+}
+
+// Delete an ad
+export async function deleteAd(id: string): Promise<void> {
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_ads");
+    const current = local ? JSON.parse(local) : [...mockAds];
+    const updated = current.filter((ad: Ad) => ad.id !== id);
+    localStorage.setItem("local_ads", JSON.stringify(updated));
+  }
+
+  if (!db) return;
+
+  try {
+    const adRef = doc(db, ADS_COLLECTION_NAME, id);
+    const snap = await getDoc(adRef);
+    if (snap.exists()) {
+      await deleteDoc(adRef);
+    }
+  } catch (error) {
+    console.error("Error deleting ad from Firestore:", error);
   }
 }

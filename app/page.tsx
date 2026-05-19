@@ -17,9 +17,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
-import { mockListings } from "@/data/mockData";
+import { mockListings, Ad } from "@/data/mockData";
 import ListingCard from "@/components/ListingCard";
 import OwnerActionModal from "@/components/OwnerActionModal";
+import { getAds } from "@/lib/firestore-service";
 import {
   generateOrganizationSchema,
   generateWebsiteSchema,
@@ -32,20 +33,30 @@ export default function Home() {
   const websiteSchema = generateWebsiteSchema();
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [ads, setAds] = useState<Ad[]>([]);
 
   useEffect(() => {
     const isLocalAdmin = localStorage.getItem("local_admin") === "true";
     if (isLocalAdmin) {
       setIsAdmin(true);
-      return;
-    }
-
-    if (auth) {
+    } else if (auth) {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         setIsAdmin(user?.email === "ammar.shtayeh@gmail.com");
       });
-      return () => unsubscribe();
+      // Do not return unsubscribe directly if we have other actions, we store it to cleanup
+      const cleanAuth = () => unsubscribe();
+      // Keep cleanup reference
     }
+
+    const fetchAds = async () => {
+      try {
+        const fetched = await getAds();
+        setAds(fetched);
+      } catch (err) {
+        console.error("Failed to fetch ads", err);
+      }
+    };
+    fetchAds();
   }, []);
 
   return (
@@ -216,6 +227,47 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* active ads banner */}
+      {ads.length > 0 && (
+        <section className="py-12 bg-white relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="flex items-center gap-3 mb-8">
+              <span className="w-2.5 h-2.5 bg-primary rounded-full animate-ping"></span>
+              <h3 className="text-xl font-black text-slate-900">عروض وإعلانات مميزة</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {ads.map((ad) => (
+                <div key={ad.id} className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 group h-64 border border-slate-800 shadow-xl">
+                  <img
+                    src={ad.imageUrl}
+                    alt={ad.title}
+                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1.5s]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                  <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                    <h4 className="text-xl md:text-2xl font-black text-white mb-4 leading-snug line-clamp-2">
+                      {ad.title}
+                    </h4>
+                    {ad.linkUrl && (
+                      <div>
+                        <Link
+                          href={ad.linkUrl}
+                          className="inline-flex items-center gap-3 bg-white text-slate-900 px-6 py-3 rounded-xl font-black text-sm hover:bg-primary hover:text-white transition-all shadow-lg hover:scale-105 active:scale-95 duration-300"
+                        >
+                          تصفح العرض
+                          <ArrowRight size={16} />
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Categories Section */}
       <section id="categories" className="py-20 lg:py-32 bg-slate-50">
@@ -626,12 +678,12 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-16 mb-20">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-8">
-                <div className="relative w-14 h-14 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1">
+                <div className="relative w-20 h-20 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1">
                   <Image
                     src="/logo.png"
                     alt="لوجو سكنو"
-                    width={52}
-                    height={52}
+                    width={72}
+                    height={72}
                     className="object-contain"
                   />
                 </div>

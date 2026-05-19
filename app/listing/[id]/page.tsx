@@ -126,7 +126,7 @@ export default function ListingDetails({
   const listingSchema = generateListingSchema(listing);
 
   return (
-    <div className="min-h-screen bg-background pb-20 text-slate-900">
+    <div className={`min-h-screen bg-background pb-20 text-slate-900 ${isStudentesses ? "theme-pink" : ""}`}>
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"

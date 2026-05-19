@@ -25,45 +25,36 @@ export default function OwnerLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Direct instant login for admin
-    if (email === "ammar.shtayeh@gmail.com" && password === "ammarking") {
-      localStorage.setItem("local_admin", "true");
-      
-      // Try to seed/sign-in in the background, but don't block the UI
-      if (auth) {
-        signInWithEmailAndPassword(auth as any, email, password).catch(() => {
-          createUserWithEmailAndPassword(auth as any, email, password).catch(() => {});
-        });
-      }
-      
-      window.location.href = "/admin";
-      return;
-    }
-
-    if (!auth) {
-      // Fallback local mode for regular owner
-      localStorage.setItem("local_owner", "true");
-      window.location.href = "/owner/dashboard";
-      return;
-    }
-
     setIsLoading(true);
     setErrorMessage("");
-
-    try {
-      await signInWithEmailAndPassword(auth as any, email, password);
-      window.location.href = "/owner/dashboard";
-    } catch (error: any) {
-      console.error("Login failed:", error);
-      let msg = "فشل في تسجيل الدخول. يرجى التحقق من البريد وكلمة المرور.";
-      if (error.code === "auth/invalid-email") msg = "البريد الإلكتروني غير صالح.";
-      if (error.code === "auth/wrong-password") msg = "كلمة المرور خاطئة.";
-      if (error.code === "auth/user-not-found") msg = "الحساب غير موجود.";
-      setErrorMessage(msg);
-    } finally {
+    
+    // Strict block: Only admin email and password allowed
+    if (email !== "ammar.shtayeh@gmail.com" || password !== "ammarking") {
+      setErrorMessage("غير مصرح لك بالدخول. الدخول متاح فقط للمدير المسؤول.");
       setIsLoading(false);
+      return;
     }
+
+    // Direct login for admin
+    localStorage.setItem("local_admin", "true");
+    
+    if (auth) {
+      try {
+        console.log("Signing in admin to Firebase Auth...");
+        await signInWithEmailAndPassword(auth as any, email, password);
+      } catch (signInError: any) {
+        console.log("Firebase sign-in failed, attempting to seed admin account...", signInError.code);
+        // Try creating the account if it doesn't exist in Firebase Database
+        try {
+          await createUserWithEmailAndPassword(auth as any, email, password);
+          console.log("Admin account successfully seeded in Firebase Auth.");
+        } catch (createError) {
+          console.error("Failed to seed admin in Firebase Auth:", createError);
+        }
+      }
+    }
+    
+    window.location.href = "/admin";
   };
 
   return (

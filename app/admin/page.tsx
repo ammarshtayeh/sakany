@@ -1,12 +1,16 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Listing } from "@/data/mockData";
+import { Listing, Ad } from "@/data/mockData";
 import {
   getPendingListings,
   getListings,
   approveListing,
   rejectListing,
+  getAllAds,
+  addAd,
+  updateAd,
+  deleteAd,
 } from "@/lib/firestore-service";
 import {
   Building2,
@@ -29,6 +33,7 @@ import {
   Eye,
   MapPin,
   Menu,
+  Megaphone,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -39,8 +44,14 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [listings, setListings] = useState<Listing[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddAdModalOpen, setIsAddAdModalOpen] = useState(false);
+  const [adTitle, setAdTitle] = useState("");
+  const [adImageUrl, setAdImageUrl] = useState("");
+  const [adLinkUrl, setAdLinkUrl] = useState("");
+  const [isAdSubmitting, setIsAdSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -128,8 +139,11 @@ export default function AdminDashboard() {
         console.log("Approved listings fetched:", approved.length);
         const pending = await getPendingListings();
         console.log("Pending listings fetched:", pending.length);
+        const adsList = await getAllAds();
+        console.log("Ads fetched:", adsList.length);
 
         setListings([...approved, ...pending]);
+        setAds(adsList);
       } catch (error) {
         alert(
           "فشل تحميل البيانات. تأكد من اتصال الإنترنت أو إعدادات الفاير بيس (index missing).",
@@ -140,6 +154,63 @@ export default function AdminDashboard() {
     };
     checkAuthAndFetch();
   }, [activeTab]); // Refresh when tab changes to ensure fresh data
+
+  const handleAddAd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adTitle || !adImageUrl) {
+      alert("يرجى ملء جميع الحقول الإلزامية");
+      return;
+    }
+    setIsAdSubmitting(true);
+    try {
+      const newAdId = await addAd({
+        title: adTitle,
+        imageUrl: adImageUrl,
+        linkUrl: adLinkUrl || undefined,
+        isActive: true,
+      });
+      
+      const newAd: Ad = {
+        id: newAdId,
+        title: adTitle,
+        imageUrl: adImageUrl,
+        linkUrl: adLinkUrl || undefined,
+        isActive: true,
+      };
+      
+      setAds((prev) => [newAd, ...prev]);
+      setIsAddAdModalOpen(false);
+      setAdTitle("");
+      setAdImageUrl("");
+      setAdLinkUrl("");
+    } catch (error) {
+      console.error("Failed to add ad:", error);
+    } finally {
+      setIsAdSubmitting(false);
+    }
+  };
+
+  const handleToggleAd = async (id: string, currentStatus: boolean) => {
+    try {
+      await updateAd(id, { isActive: !currentStatus });
+      setAds((prev) =>
+        prev.map((ad) => (ad.id === id ? { ...ad, isActive: !currentStatus } : ad))
+      );
+    } catch (error) {
+      console.error("Failed to toggle ad status:", error);
+    }
+  };
+
+  const handleDeleteAd = async (id: string) => {
+    if (confirm("هل أنت متأكد من حذف هذا الإعلان؟")) {
+      try {
+        await deleteAd(id);
+        setAds((prev) => prev.filter((ad) => ad.id !== id));
+      } catch (error) {
+        console.error("Failed to delete ad:", error);
+      }
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (confirm("هل أنت متأكد من حذف هذا العقار؟")) {
@@ -351,6 +422,7 @@ export default function AdminDashboard() {
                     count: listings.filter((l) => l.isPending).length,
                   },
                   { id: "listings", label: "إدارة الوحدات", icon: HomeIcon },
+                  { id: "ads", label: "إدارة الإعلانات", icon: Megaphone },
                   { id: "settings", label: "إعدادات النظام", icon: Settings },
                 ].map((item) => (
                   <button
@@ -415,6 +487,7 @@ export default function AdminDashboard() {
               count: listings.filter((l) => l.isPending).length,
             },
             { id: "listings", label: "إدارة الوحدات", icon: HomeIcon },
+            { id: "ads", label: "إدارة الإعلانات", icon: Megaphone },
             { id: "settings", label: "إعدادات النظام", icon: Settings },
           ].map((item) => (
             <button
@@ -797,8 +870,182 @@ export default function AdminDashboard() {
               </div>
             </motion.div>
           )}
+          {activeTab === "ads" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="animate-in fade-in duration-700"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <h2 className="text-4xl font-black text-slate-900">
+                  إدارة <span className="text-primary">الإعلانات والبنرات</span>
+                </h2>
+                <button
+                  onClick={() => setIsAddAdModalOpen(true)}
+                  className="bg-primary text-white px-10 py-5 rounded-[1.5rem] font-black flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30"
+                >
+                  <PlusCircle size={24} />
+                  إضافة إعلان جديد
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {ads.map((ad) => (
+                  <div
+                    key={ad.id}
+                    className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden hover:border-primary/40 transition-all group shadow-sm flex flex-col justify-between"
+                  >
+                    <div className="relative h-48 w-full overflow-hidden bg-slate-100">
+                      <img
+                        src={ad.imageUrl}
+                        alt={ad.title}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <span
+                          className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest backdrop-blur-md border ${
+                            ad.isActive
+                              ? "bg-emerald-500/90 text-white border-emerald-400/20"
+                              : "bg-slate-500/90 text-white border-slate-400/20"
+                          }`}
+                        >
+                          {ad.isActive ? "نشط" : "معطل"}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 flex-1 flex flex-col justify-between">
+                      <div className="mb-6">
+                        <h4 className="text-lg font-black text-slate-900 mb-2 line-clamp-2">
+                          {ad.title}
+                        </h4>
+                        {ad.linkUrl && (
+                          <p className="text-xs font-bold text-primary truncate">
+                            الرابط: {ad.linkUrl}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleToggleAd(ad.id, ad.isActive)}
+                          className={`flex-1 py-3 text-xs font-black rounded-xl transition-all border ${
+                            ad.isActive
+                              ? "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                              : "bg-emerald-500 text-white border-emerald-600 shadow-lg shadow-emerald-500/20 hover:scale-102"
+                          }`}
+                        >
+                          {ad.isActive ? "تعطيل" : "تفعيل"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAd(ad.id)}
+                          className="px-4 py-3 bg-red-500/5 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all border border-red-500/10"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {ads.length === 0 && (
+                  <div className="col-span-full py-20 text-center opacity-30">
+                    <Megaphone size={48} className="mx-auto mb-4" />
+                    <p className="text-2xl font-black">لا توجد إعلانات حالياً</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
         </div>
       </main>
+
+      <AnimatePresence>
+        {isAddAdModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddAdModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white/90 backdrop-blur-2xl border border-slate-200/80 rounded-[2.5rem] p-10 shadow-2xl flex flex-col"
+            >
+              <div className="flex justify-between items-center mb-8 bg-slate-50/50 p-2 rounded-xl">
+                <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                  <Megaphone className="text-primary animate-bounce" />
+                  إضافة إعلان ترويجي جديد
+                </h3>
+                <button
+                  onClick={() => setIsAddAdModalOpen(false)}
+                  className="p-3 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-slate-500" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddAd} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-black text-slate-700 mb-2">العنوان الترويجي *</label>
+                  <input
+                    type="text"
+                    required
+                    value={adTitle}
+                    onChange={(e) => setAdTitle(e.target.value)}
+                    placeholder="مثال: خصم 15% للطلاب الجدد"
+                    className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-black text-slate-700 mb-2">رابط صورة الإعلان *</label>
+                  <input
+                    type="url"
+                    required
+                    value={adImageUrl}
+                    onChange={(e) => setAdImageUrl(e.target.value)}
+                    placeholder="أدخل رابط صورة الإعلان"
+                    className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-black text-slate-700 mb-2">رابط التوجيه عند النقر (اختياري)</label>
+                  <input
+                    type="text"
+                    value={adLinkUrl}
+                    onChange={(e) => setAdLinkUrl(e.target.value)}
+                    placeholder="مثال: /students أو رابط خارجي"
+                    className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                  />
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddAdModalOpen(false)}
+                    className="flex-1 py-4 border border-slate-200 rounded-2xl font-black text-slate-500 hover:bg-slate-50 transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isAdSubmitting}
+                    className="flex-1 py-4 bg-premium-gradient rounded-2xl font-black text-white hover:scale-102 transition-all shadow-xl shadow-primary/20"
+                  >
+                    {isAdSubmitting ? "جاري الإضافة..." : "حفظ ونشر الإعلان"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

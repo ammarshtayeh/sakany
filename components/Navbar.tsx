@@ -143,15 +143,15 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             {/* Right Side: Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-14 h-14 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
+              <div className="relative w-20 h-20 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
                 <Image
                   src="/logo.png"
                   alt="لوجو سكنو"
-                  width={52}
-                  height={52}
+                  width={72}
+                  height={72}
                   className="object-contain"
                 />
               </div>

@@ -170,7 +170,7 @@ export default function RoommatePage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.5, delay: idx * 0.05 }}
-                  className="bg-white border border-slate-200 rounded-[3rem] p-8 hover:border-accent/30 transition-all group shadow-sm"
+                  className={`bg-white border border-slate-200 rounded-[3rem] p-8 hover:border-accent/30 transition-all group shadow-sm ${post.userGender === "female" ? "theme-pink" : ""}`}
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div

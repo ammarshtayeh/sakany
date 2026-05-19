@@ -1,3 +1,28 @@
+export interface Ad {
+  id: string;
+  title: string;
+  imageUrl: string;
+  linkUrl?: string;
+  isActive: boolean;
+}
+
+export const mockAds: Ad[] = [
+  {
+    id: "ad_1",
+    title: "خصم 15% على سكنات رفيديا للطلاب الجدد - سجل الآن!",
+    imageUrl: "https://images.unsplash.com/photo-1556761175-b813f53a362d?auto=format&fit=crop&w=1200&q=80",
+    linkUrl: "/students",
+    isActive: true,
+  },
+  {
+    id: "ad_2",
+    title: "سكنات البنات الفاخرة - القرب والأمان والراحة التامة",
+    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+    linkUrl: "/studentesses",
+    isActive: true,
+  }
+];
+
 export interface Review {
   id: string;
   userName: string;
