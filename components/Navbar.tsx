@@ -102,20 +102,20 @@ export default function Navbar() {
           <div className="flex justify-between items-center h-16">
             {/* Right Side: Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-12 h-12 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
+              <div className="relative w-16 h-16 overflow-hidden rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-1 group-hover:rotate-[10deg] transition-transform duration-500">
                 <Image
                   src="/logo.png"
                   alt="لوجو سكنو"
-                  width={40}
-                  height={40}
+                  width={56}
+                  height={56}
                   className="object-contain"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">
+                <span className="text-3xl font-black text-slate-900 leading-none tracking-tight">
                   سكنو
                 </span>
-                <span className="text-[10px] font-black text-slate-400 tracking-wider">
+                <span className="text-[11px] font-black text-slate-400 tracking-widest mt-1">
                   SAKANNU
                 </span>
               </div>
