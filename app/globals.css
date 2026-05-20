@@ -189,8 +189,49 @@
 
 /* Custom selection colors */
 ::selection {
-  background-color: var(--color-primary-100);
-  color: var(--color-primary-900);
+  background-color: var(--primary-100-val);
+  color: var(--primary-900-val);
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c4d0e3;
+  border-radius: 10px;
+  border: 2px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-val);
+}
+
+/* Glowing Aurora Blobs Animations */
+@keyframes pulse-slow {
+  0%, 100% {
+    transform: scale(1) translate(0px, 0px);
+  }
+  33% {
+    transform: scale(1.15) translate(30px, -50px);
+  }
+  66% {
+    transform: scale(0.9) translate(-20px, 30px);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 15s ease-in-out infinite;
+}
+
+.animate-pulse-slow-reverse {
+  animation: pulse-slow 20s ease-in-out infinite reverse;
 }
 
 /* Ensuring font is everywhere */

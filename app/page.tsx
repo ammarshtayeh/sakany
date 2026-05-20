@@ -105,8 +105,12 @@ export default function Home() {
       {/* Hero Section */}
       <section
         id="hero"
-        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden"
+        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-slate-50/50"
       >
+        {/* Background Aurora Glow Blobs */}
+        <div className="absolute top-1/4 left-[10%] w-96 h-96 bg-primary/10 rounded-full blur-[100px] animate-pulse-slow pointer-events-none z-0"></div>
+        <div className="absolute bottom-1/4 right-[10%] w-80 h-80 bg-orange-500/10 rounded-full blur-[80px] animate-pulse-slow-reverse pointer-events-none z-0"></div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div

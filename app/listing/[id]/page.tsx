@@ -414,6 +414,36 @@ export default function ListingDetails({
           </div>
         )}
       </main>
+
+      {/* Sticky Mobile Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 px-6 py-4 flex items-center justify-between gap-4 md:hidden shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+        <div className="flex flex-col text-right">
+          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">السعر الشهري</span>
+          <span className="text-xl font-black text-slate-900">
+            {listing.price} <span className="text-xs text-primary font-bold">₪</span>
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <a
+            href={`tel:${listing.ownerPhone}`}
+            className="px-4 py-3 bg-primary text-white rounded-xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-primary/20"
+          >
+            <Phone size={16} />
+            اتصل
+          </a>
+          <a
+            href={`https://wa.me/${listing.ownerPhone.replace(/^0/, "970")}?text=${encodeURIComponent(
+              `مرحباً، أنا مهتم بسكن "${listing.title}" المعلن عنه في منصة سكنو. هل هو متاح حالياً؟`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-emerald-600/20"
+          >
+            <MessageSquare size={16} />
+            واتساب
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
