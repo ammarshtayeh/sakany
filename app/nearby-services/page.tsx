@@ -63,17 +63,7 @@ export default function NearbyServicesPage() {
       {/* Hero Section */}
       <main className="flex-1 pt-32 pb-24 px-6 max-w-7xl mx-auto w-full">
         <header className="text-center max-w-3xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 text-primary border border-primary/10 mb-6"
-          >
-            <Sparkles size={16} />
-            <span className="text-sm font-black tracking-wide uppercase">
-              دليل الطلاب الذكي
-            </span>
-          </motion.div>
+
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
