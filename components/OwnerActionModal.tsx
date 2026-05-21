@@ -7,13 +7,19 @@ import Link from "next/link";
 interface OwnerActionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  mode?: "rent" | "sale";
 }
 
 export default function OwnerActionModal({
   isOpen,
   onClose,
+  mode = "rent",
 }: OwnerActionModalProps) {
   const whatsappNumber = "972595537190";
+
+  const messageText = mode === "sale" 
+    ? "مرحبا سكنو، أريد عرض سكني للبيع على المنصة." 
+    : "مرحبا سكنو، أريد عرض عقاري للإيجار على المنصة.";
 
   return (
     <AnimatePresence>
@@ -45,17 +51,19 @@ export default function OwnerActionModal({
 
             <div className="text-right mb-10 mt-4">
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">
-                عرض عقارك على <span className="text-gradient">سكنو</span>
+                عرض عقارك {mode === "sale" ? "للبيع " : ""}على <span className="text-gradient">سكنو</span>
               </h2>
               <p className="text-slate-500 font-bold text-lg">
-                اختر الطريقة التي تفضلها للبدء بتأجير سكنك
+                {mode === "sale" 
+                  ? "اختر الطريقة التي تفضلها للبدء ببيع سكنك" 
+                  : "اختر الطريقة التي تفضلها للبدء بتأجير سكنك"}
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* WhatsApp Option */}
               <Link
-                href={`https://wa.me/${whatsappNumber}`}
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`}
                 onClick={onClose}
                 className="group relative bg-emerald-50 border-2 border-emerald-100 p-8 rounded-[2.5rem] hover:border-emerald-500 transition-all text-right flex flex-col items-end"
               >
@@ -66,7 +74,9 @@ export default function OwnerActionModal({
                   تواصل سريع
                 </h3>
                 <p className="text-emerald-700/70 font-bold leading-relaxed mb-6">
-                  ارسل تفاصيل سكنك وصورك مباشرة عبر الواتساب وسنقوم بنشرها لك.
+                  {mode === "sale" 
+                    ? "ارسل تفاصيل سكنك وصورك مباشرة عبر الواتساب وسنقوم بنشرها للبيع." 
+                    : "ارسل تفاصيل سكنك وصورك مباشرة عبر الواتساب وسنقوم بنشرها لك."}
                 </p>
                 <div className="mt-auto text-emerald-600 font-black flex items-center gap-2 group-hover:gap-3 transition-all">
                   ابدأ المحادثة الآن
@@ -87,8 +97,9 @@ export default function OwnerActionModal({
                   لوحة التحكم
                 </h3>
                 <p className="text-primary/70 font-bold leading-relaxed mb-6">
-                  سجل سكنك بنفسك، أضف الصور، وتحكم في الأسعار والتفاصيل في أي
-                  وقت.
+                  {mode === "sale"
+                    ? "سجل سكنك للبيع بنفسك، أضف الصور، وتحكم في الأسعار والتفاصيل في أي وقت."
+                    : "سجل سكنك بنفسك، أضف الصور، وتحكم في الأسعار والتفاصيل في أي وقت."}
                 </p>
                 <div className="mt-auto text-primary font-black flex items-center gap-2 group-hover:gap-3 transition-all">
                   دخول / تسجيل جديد

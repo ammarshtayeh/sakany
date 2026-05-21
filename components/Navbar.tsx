@@ -38,6 +38,7 @@ export default function Navbar() {
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"rent" | "sale">("rent");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -166,8 +167,8 @@ export default function Navbar() {
             </Link>
 
             {/* Center Links (Desktop) */}
-            <div className="hidden md:flex items-center bg-white/50 border border-slate-200 px-8 py-3 rounded-full backdrop-blur-md">
-              <div className="flex items-center gap-10">
+            <div className="hidden md:flex items-center bg-white/50 border border-slate-200 px-6 py-3 rounded-full backdrop-blur-md">
+              <div className="flex items-center gap-6 lg:gap-10">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
@@ -181,7 +182,7 @@ export default function Navbar() {
             </div>
 
             {/* Left Side: Actions */}
-            <div className="hidden md:flex items-center gap-10">
+            <div className="hidden md:flex items-center gap-4 lg:gap-8">
               {currentUser ? (
                 <div className="flex items-center gap-6 border-l border-slate-200 pl-6 h-8">
                   {isAdmin ? (
@@ -217,10 +218,22 @@ export default function Navbar() {
                 </div>
               )}
               <button
-                onClick={() => setIsOwnerModalOpen(true)}
-                className="text-slate-600 hover:text-primary font-bold transition-colors underline-offset-8 hover:underline decoration-primary/30"
+                onClick={() => {
+                  setModalMode("rent");
+                  setIsOwnerModalOpen(true);
+                }}
+                className="text-slate-600 hover:text-primary font-bold transition-colors underline-offset-8 hover:underline decoration-primary/30 whitespace-nowrap"
               >
                 عرض عقارك للطلاب
+              </button>
+              <button
+                onClick={() => {
+                  setModalMode("sale");
+                  setIsOwnerModalOpen(true);
+                }}
+                className="text-slate-600 hover:text-primary font-bold transition-colors underline-offset-8 hover:underline decoration-primary/30 whitespace-nowrap"
+              >
+                عرض سكنك للبيع
               </button>
               {deferredPrompt && (
                 <button
@@ -399,16 +412,27 @@ export default function Navbar() {
                   )}
               </div>
 
-              {/* Footer Button */}
-              <div className="p-6 border-t border-slate-50">
+              {/* Footer Buttons */}
+              <div className="p-6 border-t border-slate-50 space-y-3">
                 <button
                   onClick={() => {
+                    setModalMode("rent");
                     setIsOwnerModalOpen(true);
                     setIsOpen(false);
                   }}
-                  className="flex items-center justify-center w-full py-5 bg-primary text-white rounded-[1.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="flex items-center justify-center w-full py-4 bg-primary text-white rounded-[1.5rem] font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  أضف سكنك الآن
+                  أضف سكنك للطلاب (إيجار)
+                </button>
+                <button
+                  onClick={() => {
+                    setModalMode("sale");
+                    setIsOwnerModalOpen(true);
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center justify-center w-full py-4 bg-white border-2 border-primary text-primary rounded-[1.5rem] font-black text-lg hover:bg-primary/5 active:scale-[0.98] transition-all"
+                >
+                  عرض سكنك للبيع
                 </button>
               </div>
             </motion.div>
@@ -493,6 +517,7 @@ export default function Navbar() {
       <OwnerActionModal
         isOpen={isOwnerModalOpen}
         onClose={() => setIsOwnerModalOpen(false)}
+        mode={modalMode}
       />
     </>
   );
