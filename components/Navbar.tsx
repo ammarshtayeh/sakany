@@ -14,6 +14,7 @@ import {
   Home,
   LayoutDashboard,
   Settings,
+  MapPin,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -132,6 +133,7 @@ export default function Navbar() {
     { name: "سكن الشباب", href: "/students" },
     { name: "سكن الطالبات", href: "/studentesses" },
     { name: "شريك سكن", href: "/roommate" },
+    { name: "الخدمات القريبة", href: "/nearby" },
   ];
 
   return (
@@ -322,6 +324,7 @@ export default function Navbar() {
                       {link.name === "سكن الشباب" && <Users size={22} />}
                       {link.name === "سكن الطالبات" && <Users size={22} />}
                       {link.name === "شريك سكن" && <Globe size={22} />}
+                      {link.name === "الخدمات القريبة" && <MapPin size={22} />}
                     </div>
                     <span className="text-xl font-bold flex-1 text-right">
                       {link.name}

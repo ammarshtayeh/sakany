@@ -378,3 +378,105 @@ export const mockRoommatePosts: RoommatePost[] = [
     date: "2024-01-18",
   },
 ];
+
+export interface NearbyService {
+  id: string;
+  name: string;
+  category: "restaurant" | "cafe" | "supermarket" | "laundry" | "stationery" | "other";
+  description: string;
+  imageUrl: string;
+  location: string;
+  distance?: string;
+  phone?: string;
+  whatsapp?: string;
+  discount?: string;
+  isFeatured?: boolean;
+  isActive: boolean;
+  isPending: boolean;
+  package?: "basic" | "silver" | "gold";
+  createdAt?: any;
+}
+
+export const mockNearbyServices: NearbyService[] = [
+  {
+    id: "ns_1",
+    name: "مطعم ومشاوي العائلات رفيديا",
+    category: "restaurant",
+    description: "أشهى الوجبات السريعة والمشاوي الشرقية، وجبات فردية بأسعار خاصة جداً ومناسبة للطلاب والطالبات.",
+    imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80",
+    location: "نابلس، شارع رفيديا الرئيسي - بجانب المستشفى العربي",
+    distance: "100 متر من سكنات رفيديا",
+    phone: "0599111222",
+    whatsapp: "+970599111222",
+    discount: "خصم 15% للطلاب عند إبراز البطاقة الجامعية",
+    isFeatured: true,
+    isActive: true,
+    isPending: false,
+    package: "gold"
+  },
+  {
+    id: "ns_2",
+    name: "كافيه ومكتبة الأمل للدراسة",
+    category: "cafe",
+    description: "بيئة دراسية هادئة، إنترنت فايبر سريع جداً، قهوة مختصة متميزة وجلسات مريحة للعمل الجماعي والدراسة.",
+    imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80",
+    location: "نابلس، شارع الأكاديمية - مقابل البوابة الرئيسية للحرم الجديد",
+    distance: "50 متر من بوابة الحرم الجديد",
+    phone: "0599333444",
+    whatsapp: "+970599333444",
+    discount: "قهوة مجانية مع كل طلب دراسة يزيد عن 20 شيكل",
+    isFeatured: true,
+    isActive: true,
+    isPending: false,
+    package: "gold"
+  },
+  {
+    id: "ns_3",
+    name: "سوبرماركت المدينة المركزي",
+    category: "supermarket",
+    description: "كافة الاحتياجات المنزلية، معلبات، مواد تنظيف، خضار وفواكه طازجة. خدمة التوصيل المجاني للسكنات الطلابية.",
+    imageUrl: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80",
+    location: "نابلس، شارع تونس - القرب من دوار تونس",
+    distance: "150 متر من سكنات الحرم الجديد",
+    phone: "0599555666",
+    whatsapp: "+970599555666",
+    discount: "توصيل مجاني بالكامل لجميع السكنات المسجلة في سكنو",
+    isFeatured: false,
+    isActive: true,
+    isPending: false,
+    package: "silver"
+  },
+  {
+    id: "ns_4",
+    name: "مغسلة النشاط السريعة (دراي كلين)",
+    category: "laundry",
+    description: "غسيل، كوي، وتجفيف الملابس بأحدث المعدات الأوتوماتيكية وبأعلى جودة. خدمة استلام وتسليم مجانية.",
+    imageUrl: "https://images.unsplash.com/photo-1545173168-9f18c8219948?auto=format&fit=crop&w=800&q=80",
+    location: "نابلس، رفيديا - خلف صيدلية رفيديا",
+    distance: "300 متر من الحرم القديم",
+    phone: "0599777888",
+    whatsapp: "+970599777888",
+    discount: "غسيل وكوي 5 كيلو ملابس بـ 15 شيكل فقط للطلاب",
+    isFeatured: false,
+    isActive: true,
+    isPending: false,
+    package: "silver"
+  },
+  {
+    id: "ns_5",
+    name: "مكتبة النجاح للطباعة والقرطاسية",
+    category: "stationery",
+    description: "توفير كافة الملازم والكتب الجامعية، تصوير مستندات سريع، قرطاسية وهدايا، وإمكانية إرسال الملفات عبر الواتساب لطباعتها قبل وصولك.",
+    imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80",
+    location: "نابلس، شارع الجامعة - بجانب البوابة الرئيسية للحرم القديم",
+    distance: "20 متر من بوابة الحرم القديم",
+    phone: "0599999000",
+    whatsapp: "+970599999000",
+    discount: "خصم 10% على كافة المطبوعات والملازم الجامعية",
+    isFeatured: false,
+    isActive: true,
+    isPending: false,
+    package: "basic"
+  }
+];
+

@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "./firebase";
-import { Listing, mockListings, mockRoommatePosts, RoommatePost, Review, Ad, mockAds } from "@/data/mockData";
+import { Listing, mockListings, mockRoommatePosts, RoommatePost, Review, Ad, mockAds, NearbyService, mockNearbyServices } from "@/data/mockData";
 
 export const COLLECTION_NAME = "listings";
 export const ROOMMATE_COLLECTION_NAME = "roommates";
@@ -457,3 +457,111 @@ export async function deleteAd(id: string): Promise<void> {
     console.error("Error deleting ad from Firestore:", error);
   }
 }
+
+export const NEARBY_SERVICES_COLLECTION_NAME = "nearby_services";
+
+// Get nearby services (active only for students, all for admin)
+export async function getNearbyServices(activeOnly: boolean = true): Promise<NearbyService[]> {
+  const getMock = () => {
+    if (typeof window !== "undefined") {
+      const local = localStorage.getItem("local_nearby_services");
+      if (local) {
+        const services = JSON.parse(local) as NearbyService[];
+        return activeOnly ? services.filter((s) => s.isActive && !s.isPending) : services;
+      }
+      localStorage.setItem("local_nearby_services", JSON.stringify(mockNearbyServices));
+    }
+    return activeOnly ? mockNearbyServices.filter((s) => s.isActive && !s.isPending) : mockNearbyServices;
+  };
+
+  if (!db) return getMock();
+
+  try {
+    const querySnapshot = await getDocs(collection(db, NEARBY_SERVICES_COLLECTION_NAME));
+    const dbServices = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as NearbyService[];
+
+    if (dbServices.length > 0) {
+      return activeOnly ? dbServices.filter((s) => s.isActive && !s.isPending) : dbServices;
+    }
+    return getMock();
+  } catch (error) {
+    console.error("Error fetching nearby services from Firestore:", error);
+    return getMock();
+  }
+}
+
+// Add a new nearby service / ad request
+export async function addNearbyService(service: Omit<NearbyService, "id">): Promise<string> {
+  const newId = `ns_${Date.now()}`;
+  const newService = { ...service, id: newId };
+
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_nearby_services");
+    const current = local ? JSON.parse(local) : [...mockNearbyServices];
+    localStorage.setItem("local_nearby_services", JSON.stringify([newService, ...current]));
+  }
+
+  if (!db) return newId;
+
+  try {
+    const docRef = await addDoc(collection(db, NEARBY_SERVICES_COLLECTION_NAME), {
+      ...service,
+      createdAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding nearby service to Firestore:", error);
+    return newId;
+  }
+}
+
+// Update nearby service
+export async function updateNearbyService(id: string, updates: Partial<NearbyService>): Promise<void> {
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_nearby_services");
+    const current = local ? JSON.parse(local) : [...mockNearbyServices];
+    const updated = current.map((s: NearbyService) => (s.id === id ? { ...s, ...updates } : s));
+    localStorage.setItem("local_nearby_services", JSON.stringify(updated));
+  }
+
+  if (!db) return;
+
+  try {
+    const docRef = doc(db, NEARBY_SERVICES_COLLECTION_NAME, id);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: Timestamp.now(),
+      });
+    }
+  } catch (error) {
+    console.error("Error updating nearby service in Firestore:", error);
+  }
+}
+
+// Delete nearby service
+export async function deleteNearbyService(id: string): Promise<void> {
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_nearby_services");
+    const current = local ? JSON.parse(local) : [...mockNearbyServices];
+    const updated = current.filter((s: NearbyService) => s.id !== id);
+    localStorage.setItem("local_nearby_services", JSON.stringify(updated));
+  }
+
+  if (!db) return;
+
+  try {
+    const docRef = doc(db, NEARBY_SERVICES_COLLECTION_NAME, id);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      await deleteDoc(docRef);
+    }
+  } catch (error) {
+    console.error("Error deleting nearby service from Firestore:", error);
+  }
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Listing, Ad } from "@/data/mockData";
+import { Listing, Ad, NearbyService } from "@/data/mockData";
 import {
   getPendingListings,
   getListings,
@@ -11,6 +11,10 @@ import {
   addAd,
   updateAd,
   deleteAd,
+  getNearbyServices,
+  addNearbyService,
+  updateNearbyService,
+  deleteNearbyService,
 } from "@/lib/firestore-service";
 import {
   Building2,
@@ -45,15 +49,31 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [listings, setListings] = useState<Listing[]>([]);
   const [ads, setAds] = useState<Ad[]>([]);
+  const [nearbyServices, setNearbyServices] = useState<NearbyService[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddAdModalOpen, setIsAddAdModalOpen] = useState(false);
+  const [isAddNearbyModalOpen, setIsAddNearbyModalOpen] = useState(false);
+  
   const [adTitle, setAdTitle] = useState("");
   const [adImageUrl, setAdImageUrl] = useState("");
   const [adLinkUrl, setAdLinkUrl] = useState("");
   const [isAdSubmitting, setIsAdSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // New nearby service form state
+  const [nsName, setNsName] = useState("");
+  const [nsCategory, setNsCategory] = useState("restaurant");
+  const [nsDescription, setNsDescription] = useState("");
+  const [nsImageUrl, setNsImageUrl] = useState("");
+  const [nsLocation, setNsLocation] = useState("");
+  const [nsDistance, setNsDistance] = useState("");
+  const [nsPhone, setNsPhone] = useState("");
+  const [nsWhatsapp, setNsWhatsapp] = useState("");
+  const [nsDiscount, setNsDiscount] = useState("");
+  const [nsPackage, setNsPackage] = useState("basic");
+  const [isNsSubmitting, setIsNsSubmitting] = useState(false);
 
   const stats = useMemo(
     () => [
@@ -141,9 +161,12 @@ export default function AdminDashboard() {
         console.log("Pending listings fetched:", pending.length);
         const adsList = await getAllAds();
         console.log("Ads fetched:", adsList.length);
+        const servicesList = await getNearbyServices(false);
+        console.log("Nearby services fetched:", servicesList.length);
 
         setListings([...approved, ...pending]);
         setAds(adsList);
+        setNearbyServices(servicesList);
       } catch (error) {
         alert(
           "فشل تحميل البيانات. تأكد من اتصال الإنترنت أو إعدادات الفاير بيس (index missing).",
@@ -208,6 +231,87 @@ export default function AdminDashboard() {
         setAds((prev) => prev.filter((ad) => ad.id !== id));
       } catch (error) {
         console.error("Failed to delete ad:", error);
+      }
+    }
+  };
+
+  const handleAddNearbyService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nsName || !nsDescription || !nsLocation) {
+      alert("يرجى ملء جميع الحقول الإلزامية");
+      return;
+    }
+    setIsNsSubmitting(true);
+    try {
+      const newServiceData = {
+        name: nsName,
+        category: nsCategory as any,
+        description: nsDescription,
+        imageUrl: nsImageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+        location: nsLocation,
+        distance: nsDistance || undefined,
+        phone: nsPhone || undefined,
+        whatsapp: nsWhatsapp || undefined,
+        discount: nsDiscount || undefined,
+        package: nsPackage as any,
+        isActive: true,
+        isPending: false,
+      };
+      
+      const newId = await addNearbyService(newServiceData);
+      
+      setNearbyServices((prev) => [
+        { ...newServiceData, id: newId },
+        ...prev,
+      ]);
+      
+      setIsAddNearbyModalOpen(false);
+      setNsName("");
+      setNsDescription("");
+      setNsImageUrl("");
+      setNsLocation("");
+      setNsDistance("");
+      setNsPhone("");
+      setNsWhatsapp("");
+      setNsDiscount("");
+      setNsPackage("basic");
+    } catch (error) {
+      console.error("Failed to add nearby service:", error);
+      alert("فشل إضافة الخدمة. حاول مرة أخرى.");
+    } finally {
+      setIsNsSubmitting(false);
+    }
+  };
+
+  const handleToggleNearbyActive = async (id: string, currentStatus: boolean) => {
+    try {
+      await updateNearbyService(id, { isActive: !currentStatus });
+      setNearbyServices((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, isActive: !currentStatus } : s))
+      );
+    } catch (error) {
+      console.error("Failed to toggle nearby service status:", error);
+    }
+  };
+
+  const handleApproveNearby = async (id: string) => {
+    try {
+      await updateNearbyService(id, { isPending: false, isActive: true });
+      setNearbyServices((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, isPending: false, isActive: true } : s))
+      );
+    } catch (error) {
+      console.error("Failed to approve nearby service:", error);
+    }
+  };
+
+  const handleDeleteNearby = async (id: string) => {
+    if (confirm("هل أنت متأكد من حذف هذه الخدمة/الإعلان نهائياً؟")) {
+      try {
+        await deleteNearbyService(id);
+        setNearbyServices((prev) => prev.filter((s) => s.id !== id));
+      } catch (error) {
+        console.error("Failed to delete nearby service:", error);
       }
     }
   };
@@ -431,6 +535,12 @@ export default function AdminDashboard() {
                     count: listings.filter((l) => l.isPending).length,
                   },
                   { id: "listings", label: "إدارة الوحدات", icon: HomeIcon },
+                  {
+                    id: "nearby",
+                    label: "الخدمات القريبة",
+                    icon: MapPin,
+                    count: nearbyServices.filter((s) => s.isPending).length,
+                  },
                   { id: "ads", label: "إدارة الإعلانات", icon: Megaphone },
                   { id: "settings", label: "إعدادات النظام", icon: Settings },
                 ].map((item) => (
@@ -450,6 +560,15 @@ export default function AdminDashboard() {
                       <item.icon size={20} />
                       {item.label}
                     </div>
+                    {item.count !== undefined && item.count > 0 && (
+                      <span
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${
+                          activeTab === item.id ? "bg-white text-orange-600" : "bg-orange-600 text-white"
+                        }`}
+                      >
+                        {item.count}
+                      </span>
+                    )}
                   </button>
                 ))}
               </nav>
@@ -496,6 +615,12 @@ export default function AdminDashboard() {
               count: listings.filter((l) => l.isPending).length,
             },
             { id: "listings", label: "إدارة الوحدات", icon: HomeIcon },
+            {
+              id: "nearby",
+              label: "الخدمات القريبة",
+              icon: MapPin,
+              count: nearbyServices.filter((s) => s.isPending).length,
+            },
             { id: "ads", label: "إدارة الإعلانات", icon: Megaphone },
             { id: "settings", label: "إعدادات النظام", icon: Settings },
           ].map((item) => (
@@ -979,6 +1104,216 @@ export default function AdminDashboard() {
               </div>
             </motion.div>
           )}
+
+          {activeTab === "nearby" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="animate-in fade-in duration-700 text-slate-900"
+            >
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
+                <div>
+                  <h2 className="text-4xl font-black text-slate-900 mb-2 flex items-center gap-3">
+                    إدارة <span className="text-primary">الخدمات والإعلانات القريبة</span>
+                  </h2>
+                  <p className="text-slate-500 font-bold text-sm">الموافقة على طلبات أصحاب المحلات والمطاعم وإدارة الدليل النشط</p>
+                </div>
+                <button
+                  onClick={() => setIsAddNearbyModalOpen(true)}
+                  className="bg-primary text-white px-10 py-5 rounded-[1.5rem] font-black flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 text-sm"
+                >
+                  <PlusCircle size={20} />
+                  إضافة خدمة/إعلان يدوي
+                </button>
+              </div>
+
+              {/* Pending Requests Section */}
+              <div className="mb-14">
+                <h3 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                  <span className="w-2.5 h-7 bg-amber-500 rounded-full inline-block"></span>
+                  طلبات الإعلان المعلقة ({nearbyServices.filter((s) => s.isPending).length})
+                </h3>
+
+                <div className="space-y-6">
+                  {nearbyServices.filter((s) => s.isPending).map((service) => (
+                    <div
+                      key={service.id}
+                      className="bg-white border-2 border-amber-200/60 p-8 rounded-[2.5rem] flex flex-col lg:flex-row gap-8 hover:border-amber-400 transition-all shadow-sm"
+                    >
+                      <div className="relative w-full lg:w-56 h-40 rounded-[2rem] overflow-hidden shrink-0 border border-slate-100 bg-slate-50">
+                        <img
+                          src={service.imageUrl}
+                          alt={service.name}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                          <div className="flex flex-wrap justify-between items-start gap-4 mb-3">
+                            <div>
+                              <h4 className="text-2xl font-black text-slate-900 mb-1">
+                                {service.name}
+                              </h4>
+                              <p className="text-slate-600 font-bold flex items-center gap-2 text-sm">
+                                <MapPin size={16} className="text-primary" /> {service.location}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-700">
+                                {service.category === "restaurant" && "مطعم"}
+                                {service.category === "cafe" && "مقهى / كافيه"}
+                                {service.category === "supermarket" && "سوبرماركت"}
+                                {service.category === "laundry" && "مغسلة ملابس"}
+                                {service.category === "stationery" && "مكتبة وقرطاسية"}
+                                {service.category === "other" && "خدمات أخرى"}
+                              </span>
+                              <span
+                                className={`px-3 py-1.5 rounded-xl text-xs font-black text-white ${
+                                  service.package === "gold"
+                                    ? "bg-amber-500"
+                                    : service.package === "silver"
+                                    ? "bg-slate-400"
+                                    : "bg-blue-500"
+                                }`}
+                              >
+                                باقة {service.package === "gold" ? "ذهبية" : service.package === "silver" ? "فضية" : "أساسية"}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-slate-600 font-medium text-sm leading-relaxed mb-4">
+                            {service.description}
+                          </p>
+                          {service.discount && (
+                            <div className="inline-flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-600 text-sm font-black px-4 py-2 rounded-xl mb-4">
+                              <span>🎁 عرض الطلاب:</span>
+                              <span>{service.discount}</span>
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-x-8 gap-y-2 text-xs text-slate-500 border-t border-slate-100 pt-4 font-bold">
+                            {service.distance && <span>المسافة: {service.distance}</span>}
+                            {service.phone && <span>الهاتف: {service.phone}</span>}
+                            {service.whatsapp && <span>واتساب: {service.whatsapp}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex lg:flex-col gap-3 justify-center lg:w-48 shrink-0">
+                        <button
+                          onClick={() => handleApproveNearby(service.id)}
+                          className="flex-1 bg-emerald-500 text-white py-3.5 rounded-2xl font-black transition-all hover:scale-105 hover:bg-emerald-600 shadow-xl shadow-emerald-500/10 flex items-center justify-center gap-2 text-xs cursor-pointer"
+                        >
+                          <CheckCircle2 size={18} />
+                          موافقة ونشر
+                        </button>
+                        <button
+                          onClick={() => handleDeleteNearby(service.id)}
+                          className="flex-1 bg-rose-50 text-rose-600 border border-rose-200 py-3.5 rounded-2xl font-black transition-all hover:bg-rose-100 flex items-center justify-center gap-2 text-xs cursor-pointer"
+                        >
+                          <XCircle size={18} />
+                          رفض وحذف
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {nearbyServices.filter((s) => s.isPending).length === 0 && (
+                    <div className="py-14 text-center bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center">
+                      <CheckCircle2 size={48} className="mb-3 text-emerald-500" />
+                      <p className="text-lg font-black text-slate-500">لا توجد طلبات إعلان معلقة حالياً</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Active Services Section */}
+              <div>
+                <h3 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                  <span className="w-2.5 h-7 bg-emerald-500 rounded-full inline-block"></span>
+                  دليل الخدمات النشطة ({nearbyServices.filter((s) => !s.isPending).length})
+                </h3>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                  {nearbyServices.filter((s) => !s.isPending).map((service) => (
+                    <div
+                      key={service.id}
+                      className={`bg-white border-2 rounded-[2.5rem] p-8 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition-all group relative ${
+                        service.package === "gold"
+                          ? "border-amber-300 shadow-md shadow-amber-500/5"
+                          : "border-slate-200"
+                      }`}
+                    >
+                      <div className="relative w-full sm:w-36 h-36 rounded-[2rem] overflow-hidden shrink-0 border border-slate-100 bg-slate-50">
+                        <img
+                          src={service.imageUrl}
+                          alt={service.name}
+                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="text-xl font-black text-slate-900 group-hover:text-primary transition-colors">
+                              {service.name}
+                            </h4>
+                            <span
+                              className={`px-3 py-1 rounded-xl text-[10px] font-black text-white ${
+                                service.package === "gold"
+                                  ? "bg-amber-500 animate-pulse"
+                                  : service.package === "silver"
+                                  ? "bg-slate-400"
+                                  : "bg-blue-500"
+                              }`}
+                            >
+                              {service.package === "gold" ? "ذهبية" : service.package === "silver" ? "فضية" : "أساسية"}
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold text-slate-500 mb-1">{service.location}</p>
+                          <p className="text-slate-600 font-medium text-xs line-clamp-2 leading-relaxed mb-4">
+                            {service.description}
+                          </p>
+                          {service.discount && (
+                            <p className="text-xs font-black text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg inline-block">
+                              🎁 {service.discount}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex justify-between items-center border-t border-slate-100 pt-4 mt-2">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`px-3 py-1 rounded-lg text-[10px] font-black ${
+                                service.isActive
+                                  ? "bg-emerald-500/10 text-emerald-600"
+                                  : "bg-slate-100 text-slate-500"
+                              }`}
+                            >
+                              {service.isActive ? "نشط ومتاح" : "معطل مؤقتاً"}
+                            </span>
+                            <button
+                              onClick={() => handleToggleNearbyActive(service.id, service.isActive)}
+                              className="text-xs font-black text-primary hover:underline cursor-pointer"
+                            >
+                              تغيير الحالة
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteNearby(service.id)}
+                            className="px-4 py-2 bg-red-500/5 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all border border-red-500/10 text-xs font-bold cursor-pointer"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {nearbyServices.filter((s) => !s.isPending).length === 0 && (
+                    <div className="col-span-full py-14 text-center opacity-30">
+                      <MapPin size={48} className="mx-auto mb-4 animate-bounce" />
+                      <p className="text-2xl font-black">لا توجد خدمات نشطة حالياً</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </main>
 
@@ -1061,6 +1396,187 @@ export default function AdminDashboard() {
                     className="flex-1 py-4 bg-premium-gradient rounded-2xl font-black text-white hover:scale-102 transition-all shadow-xl shadow-primary/20"
                   >
                     {isAdSubmitting ? "جاري الإضافة..." : "حفظ ونشر الإعلان"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Nearby Service Modal */}
+      <AnimatePresence>
+        {isAddNearbyModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddNearbyModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-[3rem] p-10 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-8 bg-slate-50/50 p-3 rounded-2xl">
+                <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                  <MapPin className="text-primary animate-pulse" />
+                  إضافة خدمة أو إعلان محلي جديد
+                </h3>
+                <button
+                  onClick={() => setIsAddNearbyModalOpen(false)}
+                  className="p-3 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-slate-500" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddNearbyService} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">اسم المنشأة / المحل التجاري *</label>
+                    <input
+                      type="text"
+                      required
+                      value={nsName}
+                      onChange={(e) => setNsName(e.target.value)}
+                      placeholder="مثال: شاورما العلا أو كافيه الأكاديمية"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">تصنيف الخدمة *</label>
+                    <select
+                      value={nsCategory}
+                      onChange={(e) => setNsCategory(e.target.value)}
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950 appearance-none"
+                    >
+                      <option value="restaurant">مطعم</option>
+                      <option value="cafe">مقهى / كافيه</option>
+                      <option value="supermarket">سوبرماركت</option>
+                      <option value="laundry">مغسلة ملابس</option>
+                      <option value="stationery">مكتبة وقرطاسية</option>
+                      <option value="other">خدمات أخرى</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-black text-slate-700 mb-2">الوصف وتفاصيل العرض والخدمة *</label>
+                  <textarea
+                    required
+                    value={nsDescription}
+                    onChange={(e) => setNsDescription(e.target.value)}
+                    placeholder="اكتب وصفاً مميزاً للمحل، أوقات العمل، الخدمات المقدمة للطلاب..."
+                    rows={3}
+                    className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">رابط صورة المنشأة (أو اتركه فارغاً لصورة افتراضية)</label>
+                    <input
+                      type="url"
+                      value={nsImageUrl}
+                      onChange={(e) => setNsImageUrl(e.target.value)}
+                      placeholder="أدخل رابط صورة JPEG/PNG"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">الموقع بالتفصيل في نابلس *</label>
+                    <input
+                      type="text"
+                      required
+                      value={nsLocation}
+                      onChange={(e) => setNsLocation(e.target.value)}
+                      placeholder="مثال: رفيديا، بجانب الحرم القديم"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">المسافة عن الجامعة (اختياري)</label>
+                    <input
+                      type="text"
+                      value={nsDistance}
+                      onChange={(e) => setNsDistance(e.target.value)}
+                      placeholder="مثال: 50 متر من بوابة الحرم"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">رقم الهاتف للتواصل (اختياري)</label>
+                    <input
+                      type="text"
+                      value={nsPhone}
+                      onChange={(e) => setNsPhone(e.target.value)}
+                      placeholder="مثال: 0599000000"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">رقم الواتساب مع رمز الدولة (اختياري)</label>
+                    <input
+                      type="text"
+                      value={nsWhatsapp}
+                      onChange={(e) => setNsWhatsapp(e.target.value)}
+                      placeholder="مثال: +970599000000"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">العرض الخاص بالطلاب إن وجد (اختياري)</label>
+                    <input
+                      type="text"
+                      value={nsDiscount}
+                      onChange={(e) => setNsDiscount(e.target.value)}
+                      placeholder="مثال: خصم 15% للطلاب عند إبراز البطاقة"
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-slate-700 mb-2">باقة الإعلان المدفوعة *</label>
+                    <select
+                      value={nsPackage}
+                      onChange={(e) => setNsPackage(e.target.value)}
+                      className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950 appearance-none"
+                    >
+                      <option value="basic">الأساسية (Basic)</option>
+                      <option value="silver">الفضية (Silver)</option>
+                      <option value="gold">الذهبية المميزة (Gold)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddNearbyModalOpen(false)}
+                    className="flex-1 py-4 border border-slate-200 rounded-2xl font-black text-slate-500 hover:bg-slate-50 transition-all cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isNsSubmitting}
+                    className="flex-1 py-4 bg-premium-gradient rounded-2xl font-black text-white hover:scale-102 transition-all shadow-xl shadow-primary/20 cursor-pointer"
+                  >
+                    {isNsSubmitting ? "جاري الإضافة..." : "حفظ ونشر الخدمة"}
                   </button>
                 </div>
               </form>
