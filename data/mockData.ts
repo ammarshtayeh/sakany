@@ -46,6 +46,7 @@ export interface Listing {
   isPending: boolean;
   ownerName: string;
   ownerPhone: string;
+  ownerEmail?: string;
   beds?: number;
   bathrooms?: number;
   sqft?: number;
@@ -53,6 +54,8 @@ export interface Listing {
   reviews?: Review[];
   lat?: number | null;
   lng?: number | null;
+  viewsCount?: number;
+  contactsCount?: number;
 }
 
 export interface RoommatePost {
@@ -65,6 +68,9 @@ export interface RoommatePost {
   preferredLocation: string;
   contactPhone: string;
   date: string;
+  major?: string;
+  studyYear?: "first" | "second" | "third" | "fourth" | "graduate";
+  habits?: string[];
 }
 
 export const mockListings: Listing[] = [
@@ -359,11 +365,14 @@ export const mockRoommatePosts: RoommatePost[] = [
     userGender: "male",
     title: "أبحث عن شريك سكن في منطقة رفيديا",
     description:
-      "أنا طالب سنة ثالثة هندسة، هادئ وغير مدخن، أبحث عن شخص يشاركني شقة غرفتين.",
+      "أنا طالب سنة ثالثة هندسة، هادئ وغير مدخن، أبحث عن شخص يشاركني شقة غرفتين بسعر معقول.",
     priceRange: "700-900 شيكل",
     preferredLocation: "رفيديا، بجانب المستشفى العربي",
     contactPhone: "0599000111",
     date: "2024-01-20",
+    major: "هندسة حاسوب",
+    studyYear: "third",
+    habits: ["غير مدخن", "ينام مبكراً", "بيئة هادئة", "منظم"],
   },
   {
     id: "rp2",
@@ -371,11 +380,44 @@ export const mockRoommatePosts: RoommatePost[] = [
     userGender: "female",
     title: "مطلوب شريكة سكن في شارع تونس",
     description:
-      "أبحث عن طالبة لتشاركني غرفة مزدوجة في سكن طالبات، السكن مريح ونظيف جداً.",
+      "أبحث عن طالبة لتشاركني غرفة مزدوجة في سكن طالبات، السكن مريح ونظيف جداً وقريب من الحرم.",
     priceRange: "600 شيكل",
     preferredLocation: "شارع تونس، قريب من الحرم الجديد",
     contactPhone: "0598222333",
     date: "2024-01-18",
+    major: "علم النفس",
+    studyYear: "second",
+    habits: ["هادئة", "نظيفة", "ملتزمة دراسياً"],
+  },
+  {
+    id: "rp3",
+    userName: "أحمد سالم",
+    userGender: "male",
+    title: "أبحث عن شريك لشقة في المركز",
+    description:
+      "طالب طب سنة أولى، ملتزم ومجتهد، أبحث عن شريك هادئ للسكن في شقة قرب المجمع الطبي.",
+    priceRange: "800-1000 شيكل",
+    preferredLocation: "المركز، قرب المجمع الطبي",
+    contactPhone: "0597111222",
+    date: "2024-01-22",
+    major: "طب بشري",
+    studyYear: "first",
+    habits: ["غير مدخن", "بيئة هادئة", "يهتم بالنظافة"],
+  },
+  {
+    id: "rp4",
+    userName: "ريم العلي",
+    userGender: "female",
+    title: "شريكة سكن مطلوبة - ضاحية",
+    description:
+      "أسكن في شقة ممتازة بمنطقة الضاحية وأبحث عن شريكة لتقاسم الإيجار. الشقة واسعة ومريحة جداً.",
+    priceRange: "900 شيكل",
+    preferredLocation: "حي الضاحية",
+    contactPhone: "0595888777",
+    date: "2024-01-25",
+    major: "إدارة أعمال",
+    studyYear: "fourth",
+    habits: ["اجتماعية", "منظمة", "تحب الطبخ"],
   },
 ];
 
@@ -390,6 +432,8 @@ export interface NearbyService {
   address: string;
   discount?: string;
   isActive: boolean;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export const mockNearbyServices: NearbyService[] = [
@@ -403,7 +447,9 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970599123456",
     address: "رفيديا - الشارع الرئيسي - مقابل المستشفى العربي",
     discount: "خصم 15% لحاملي بطاقة جامعة النجاح",
-    isActive: true
+    isActive: true,
+    lat: 32.2265,
+    lng: 35.2215,
   },
   {
     id: "ns2",
@@ -415,7 +461,9 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970598765432",
     address: "شارع الأكاديمية - بجانب الحرم الجديد لجامعة النجاح",
     discount: "مشروب مجاني مع كل 3 ساعات دراسة",
-    isActive: true
+    isActive: true,
+    lat: 32.2285,
+    lng: 35.2240,
   },
   {
     id: "ns3",
@@ -427,7 +475,9 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970597111222",
     address: "المخفية - الدوار الرئيسي",
     discount: "توصيل مجاني بالكامل لكافة سكنات الطلاب",
-    isActive: true
+    isActive: true,
+    lat: 32.2245,
+    lng: 35.2255,
   },
   {
     id: "ns4",
@@ -439,7 +489,9 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970595333444",
     address: "شارع تونس - قرب سكنات الطلاب",
     discount: "كوي مجاني لقطعتين عند غسيل أكثر من 5 كغم",
-    isActive: true
+    isActive: true,
+    lat: 32.2255,
+    lng: 35.2205,
   }
 ];
 

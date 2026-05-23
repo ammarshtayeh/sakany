@@ -12,6 +12,7 @@ import {
   Timestamp,
   orderBy,
   arrayUnion,
+  increment,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "./firebase";
@@ -25,9 +26,19 @@ export async function getListings(
   category?: "students" | "studentesses",
 ): Promise<Listing[]> {
   const getMockData = () => {
-    let list = mockListings.filter((l) => !l.isPending);
+    let list = mockListings.filter((l) => !l.isPending).map(l => ({ ...l }));
     if (category) {
       list = list.filter((l) => l.category === category);
+    }
+    if (typeof window !== "undefined") {
+      list.forEach((listing) => {
+        const statsStr = localStorage.getItem(`local_stats_${listing.id}`);
+        if (statsStr) {
+          const stats = JSON.parse(statsStr);
+          listing.viewsCount = (listing.viewsCount || 0) + (stats.views || 0);
+          listing.contactsCount = (listing.contactsCount || 0) + (stats.contacts || 0);
+        }
+      });
     }
     return list;
   };
@@ -51,12 +62,18 @@ export async function getListings(
     })) as Listing[];
 
     if (firestoreListings.length > 0) {
-      // Append local reviews to Firestore listings if any exist in localStorage
+      // Append local reviews and stats to Firestore listings if any exist in localStorage
       if (typeof window !== "undefined") {
         firestoreListings.forEach((listing) => {
           const local = localStorage.getItem(`local_reviews_${listing.id}`);
           if (local) {
             listing.reviews = [...(listing.reviews || []), ...JSON.parse(local)];
+          }
+          const statsStr = localStorage.getItem(`local_stats_${listing.id}`);
+          if (statsStr) {
+            const stats = JSON.parse(statsStr);
+            listing.viewsCount = (listing.viewsCount || 0) + (stats.views || 0);
+            listing.contactsCount = (listing.contactsCount || 0) + (stats.contacts || 0);
           }
         });
       }
@@ -119,6 +136,12 @@ export async function getListingById(id: string): Promise<Listing | null> {
     if (local) {
       const localReviews = JSON.parse(local);
       listing.reviews = [...(listing.reviews || []), ...localReviews];
+    }
+    const statsStr = localStorage.getItem(`local_stats_${listing.id}`);
+    if (statsStr) {
+      const stats = JSON.parse(statsStr);
+      listing.viewsCount = (listing.viewsCount || 0) + (stats.views || 0);
+      listing.contactsCount = (listing.contactsCount || 0) + (stats.contacts || 0);
     }
   }
 
@@ -589,5 +612,47 @@ export async function deleteNearbyService(id: string): Promise<void> {
     }
   } catch (error) {
     console.error("Error deleting nearby service from Firestore:", error);
+  }
+}
+
+// Increment listing views
+export async function incrementListingViews(id: string): Promise<void> {
+  if (typeof window !== "undefined") {
+    const statsStr = localStorage.getItem(`local_stats_${id}`);
+    const stats = statsStr ? JSON.parse(statsStr) : { views: 0, contacts: 0 };
+    stats.views += 1;
+    localStorage.setItem(`local_stats_${id}`, JSON.stringify(stats));
+  }
+
+  if (!db) return;
+
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, {
+      viewsCount: increment(1),
+    });
+  } catch (error) {
+    console.error("Error incrementing views in Firestore:", error);
+  }
+}
+
+// Increment listing contacts
+export async function incrementListingContacts(id: string): Promise<void> {
+  if (typeof window !== "undefined") {
+    const statsStr = localStorage.getItem(`local_stats_${id}`);
+    const stats = statsStr ? JSON.parse(statsStr) : { views: 0, contacts: 0 };
+    stats.contacts += 1;
+    localStorage.setItem(`local_stats_${id}`, JSON.stringify(stats));
+  }
+
+  if (!db) return;
+
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, {
+      contactsCount: increment(1),
+    });
+  } catch (error) {
+    console.error("Error incrementing contacts in Firestore:", error);
   }
 }

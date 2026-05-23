@@ -1,7 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap");
 @import "tailwindcss";
+@variant dark (.dark &);
+
 
 :root {
+  --background-val: #f8fafc;
+  --foreground-val: #1f2937;
+  --card-val: #ffffff;
+  --border-val: #e5e7eb;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-card-bg: rgba(255, 255, 255, 0.8);
+  --glass-card-border: rgba(255, 255, 255, 0.3);
+
   --primary-val: #3a8ba0;
   --primary-50-val: #f0fafb;
   --primary-100-val: #d8f1f5;
@@ -49,9 +61,72 @@
   --accent-700-val: #be185d;
 }
 
+.dark {
+  --background-val: #081014;
+  --foreground-val: #f1f5f9;
+  --card-val: #0d1a20;
+  --border-val: #162a33;
+
+  --glass-bg: rgba(13, 26, 32, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-card-bg: rgba(13, 26, 32, 0.8);
+  --glass-card-border: rgba(255, 255, 255, 0.1);
+
+  --primary-val: #4ea8be;
+  --primary-50-val: #0a171d;
+  --primary-100-val: #0f232b;
+  --primary-200-val: #14323e;
+  --primary-300-val: #1d4656;
+  --primary-400-val: #275e74;
+  --primary-500-val: #4ea8be;
+  --primary-600-val: #6ebcca;
+  --primary-700-val: #92ced8;
+  --primary-800-val: #b8e0e6;
+  --primary-900-val: #ddf2f5;
+
+  --accent-val: #e3a652;
+  --accent-50-val: #201a11;
+  --accent-100-val: #302616;
+  --accent-200-val: #44351a;
+  --accent-300-val: #5f4820;
+  --accent-400-val: #826027;
+  --accent-500-val: #a8792c;
+  --accent-600-val: #e3a652;
+  --accent-700-val: #ebd2ad;
+}
+
+.theme-pink.dark {
+  --background-val: #12090e;
+  --foreground-val: #fdf2f8;
+  --card-val: #1a0d15;
+  --border-val: #2b1422;
+
+  --glass-bg: rgba(26, 13, 21, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-card-bg: rgba(26, 13, 21, 0.8);
+  --glass-card-border: rgba(255, 255, 255, 0.1);
+
+  --primary-val: #f472b6;
+  --primary-50-val: #1c0b13;
+  --primary-100-val: #2b0e1e;
+  --primary-200-val: #3c1228;
+  --primary-300-val: #521836;
+  --primary-400-val: #6b2147;
+  --primary-500-val: #f472b6;
+  --primary-600-val: #db2777;
+  --primary-700-val: #be185d;
+  --primary-800-val: #9d174d;
+  --primary-900-val: #831843;
+
+  --accent-val: #f472b6;
+  --accent-50-val: #2b0e1e;
+  --accent-100-val: #3c1228;
+  --accent-200-val: #521836;
+}
+
 @theme {
-  --color-background: #f8fafc;
-  --color-foreground: #1f2937;
+  --color-background: var(--background-val);
+  --color-foreground: var(--foreground-val);
 
   --color-primary: var(--primary-val);
   --color-primary-50: var(--primary-50-val);
@@ -75,8 +150,8 @@
   --color-accent-600: var(--accent-600-val);
   --color-accent-700: var(--accent-700-val);
 
-  --color-card: #ffffff;
-  --color-border: #e5e7eb;
+  --color-card: var(--card-val);
+  --color-border: var(--border-val);
 
   --font-almarai: "Almarai", sans-serif;
 

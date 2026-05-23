@@ -15,6 +15,8 @@ import {
   LayoutDashboard,
   Settings,
   Store,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,6 +44,31 @@ export default function Navbar() {
   const [modalMode, setModalMode] = useState<"rent" | "sale">("rent");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (storedTheme === "dark" || (!storedTheme && systemPrefersDark)) {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (document.documentElement.classList.contains("dark")) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+      setIsDark(false);
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      setIsDark(true);
+    }
+  };
 
   useEffect(() => {
     // Check local fallback auth first
@@ -246,9 +273,15 @@ export default function Navbar() {
                   تثبيت التطبيق
                 </button>
               )}
+              <button
+                onClick={toggleTheme}
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm cursor-pointer"
+              >
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
               <a
                 href="tel:+97059537190"
-                className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/50 transition-all shadow-sm"
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm"
               >
                 <Phone size={20} />
               </a>
@@ -265,8 +298,14 @@ export default function Navbar() {
                 </button>
               )}
               <button
+                onClick={toggleTheme}
+                className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-90 shadow-sm cursor-pointer"
+              >
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-slate-900 p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all active:scale-90 shadow-sm"
+                className="text-slate-900 dark:text-white p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-90 shadow-sm cursor-pointer"
               >
                 <Menu size={24} />
               </button>
@@ -291,17 +330,25 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 bottom-0 right-0 w-[85%] max-w-[320px] bg-white z-[100] md:hidden flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.15)] overflow-hidden"
+              className="fixed top-0 bottom-0 right-0 w-[85%] max-w-[320px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-[100] md:hidden flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.15)] overflow-hidden"
             >
               {/* Header */}
-              <div className="p-6 pb-2 flex flex-col items-end gap-10 text-right w-full">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 text-slate-400 hover:text-slate-900 transition-colors"
-                >
-                  <X size={24} />
-                </button>
-                <h2 className="text-3xl font-black text-slate-900 pr-2 w-full">
+              <div className="p-6 pb-2 flex flex-col gap-6 text-right w-full">
+                <div className="flex justify-between items-center w-full">
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer"
+                  >
+                    {isDark ? <Sun size={20} /> : <Moon size={20} />}
+                  </button>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white pr-2 w-full">
                   القائمة
                 </h2>
               </div>

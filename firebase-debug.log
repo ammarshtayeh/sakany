@@ -1,0 +1,46 @@
+[debug] [2026-05-21T14:09:51.442Z] ----------------------------------------------------------------------
+[debug] [2026-05-21T14:09:51.448Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Ammar\AppData\Local\npm-cache\_npx\7750544ccf494d8b\node_modules\firebase-tools\lib\bin\firebase.js init hosting --project sakkenny-cf178
+[debug] [2026-05-21T14:09:51.449Z] CLI Version:   15.18.0
+[debug] [2026-05-21T14:09:51.449Z] Platform:      win32
+[debug] [2026-05-21T14:09:51.450Z] Node Version:  v24.13.0
+[debug] [2026-05-21T14:09:51.450Z] Time:          Thu May 21 2026 17:09:51 GMT+0300 (Eastern European Summer Time)
+[debug] [2026-05-21T14:09:51.451Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\sakanat
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-05-21T14:11:30.244Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-21T14:11:30.247Z] > authorizing via signed-in user (ammar.shtayeh@gmail.com)
+[debug] [2026-05-21T14:11:30.254Z] Checked if tokens are valid: true, expires at: 1779376157063
+[debug] [2026-05-21T14:11:30.254Z] Checked if tokens are valid: true, expires at: 1779376157063
+[debug] [2026-05-21T14:11:30.260Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sakkenny-cf178 [none]
+[debug] [2026-05-21T14:11:30.787Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sakkenny-cf178 200
+[debug] [2026-05-21T14:11:30.788Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sakkenny-cf178 {"projectId":"sakkenny-cf178","projectNumber":"1061320320143","displayName":"sakkenny","name":"projects/sakkenny-cf178","resources":{"hostingSite":"sakkenny-cf178","realtimeDatabaseInstance":"sakkenny-cf178-default-rtdb"},"state":"ACTIVE","etag":"1_b5718c8c-182e-41ee-a159-966295da116e"}
+[info] i  Using project sakkenny-cf178 (sakkenny) . 
+[info] 
+=== Hosting Setup
+[info] 
+[debug] [2026-05-21T14:12:09.067Z] Checked if tokens are valid: true, expires at: 1779376157063
+[debug] [2026-05-21T14:12:09.067Z] Checked if tokens are valid: true, expires at: 1779376157063
+[debug] [2026-05-21T14:12:09.068Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sakkenny-cf178 [none]
+[debug] [2026-05-21T14:12:09.458Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sakkenny-cf178 200
+[debug] [2026-05-21T14:12:09.462Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sakkenny-cf178 {"projectId":"sakkenny-cf178","projectNumber":"1061320320143","displayName":"sakkenny","name":"projects/sakkenny-cf178","resources":{"hostingSite":"sakkenny-cf178","realtimeDatabaseInstance":"sakkenny-cf178-default-rtdb"},"state":"ACTIVE","etag":"1_b5718c8c-182e-41ee-a159-966295da116e"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 

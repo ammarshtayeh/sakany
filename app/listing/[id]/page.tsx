@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { mockListings, Listing } from "@/data/mockData";
-import { getListingById, addListingReview } from "@/lib/firestore-service";
+import { getListingById, addListingReview, incrementListingViews, incrementListingContacts } from "@/lib/firestore-service";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -22,6 +22,9 @@ import {
   Bed,
   Bath,
   Maximize,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,6 +56,8 @@ export default function ListingDetails({
   const [listing, setListing] = useState<Listing | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
     const isLocalAdmin = localStorage.getItem("local_admin") === "true";
@@ -75,9 +80,31 @@ export default function ListingDetails({
       const data = await getListingById(id);
       setListing(data);
       setIsLoading(false);
+      if (data) {
+        incrementListingViews(id);
+      }
     }
     loadListing();
   }, [id]);
+
+  const handleContactClick = () => {
+    incrementListingContacts(id);
+  };
+
+  const getProximityText = (college?: string) => {
+    switch (college) {
+      case "new_campus":
+        return "5 دقائق مشياً للحرم الجديد 🎓";
+      case "old_campus":
+        return "3 دقائق بالسيارة للحرم القديم (8 دقائق مشياً) 🎓";
+      case "medical_campus":
+        return "6 دقائق مشياً لمجمع كليات الطب والصيدلة 🎓";
+      case "academy":
+        return "4 دقائق مشياً لمبنى الأكاديمية 🎓";
+      default:
+        return "قريب جداً من كليات جامعة النجاح الوطنية 🎓";
+    }
+  };
 
   const handleReviewSubmit = async (newReviewData: {
     userName: string;
@@ -123,16 +150,74 @@ export default function ListingDetails({
       listing.reviews.length
     : 0;
 
+  const images = listing.images && listing.images.length > 0
+    ? listing.images
+    : [listing.image, listing.image, listing.image];
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   const listingSchema = generateListingSchema(listing);
 
   return (
-    <div className={`min-h-screen bg-background pb-20 text-slate-900 ${isStudentesses ? "theme-pink" : ""}`}>
+    <div className={`min-h-screen bg-background pb-20 text-slate-900 dark:text-foreground ${isStudentesses ? "theme-pink" : ""}`}>
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listingSchema) }}
       />
       <Navbar />
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center select-none animate-in fade-in duration-300">
+          <button
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-6 left-6 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-4 rounded-2xl transition-all cursor-pointer shadow-lg z-50 border border-white/10"
+            aria-label="إغلاق المعرض"
+          >
+            <X size={28} />
+          </button>
+
+          <button
+            onClick={handlePrevImage}
+            className="absolute right-6 w-16 h-16 flex items-center justify-center text-white/85 hover:text-white bg-white/10 hover:bg-white/20 rounded-2xl transition-all z-50 border border-white/10 hover:scale-105 active:scale-95"
+            aria-label="الصورة السابقة"
+          >
+            <ChevronRight size={32} />
+          </button>
+
+          <div className="relative w-full max-w-5xl h-[70vh] px-4">
+            <Image
+              src={images[currentImageIndex]}
+              alt={listing.title}
+              fill
+              className="object-contain rounded-3xl"
+              priority
+            />
+          </div>
+
+          <button
+            onClick={handleNextImage}
+            className="absolute left-6 w-16 h-16 flex items-center justify-center text-white/85 hover:text-white bg-white/10 hover:bg-white/20 rounded-2xl transition-all z-50 border border-white/10 hover:scale-105 active:scale-95"
+            aria-label="الصورة التالية"
+          >
+            <ChevronLeft size={32} />
+          </button>
+
+          {/* Floating Indicator */}
+          <div className="absolute bottom-6 bg-black/50 text-white backdrop-blur-md px-6 py-2.5 rounded-full font-black text-sm tracking-widest border border-white/10 z-50">
+            {currentImageIndex + 1} / {images.length}
+          </div>
+        </div>
+      )}
 
       <main className="pt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16">
@@ -142,14 +227,23 @@ export default function ListingDetails({
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
-            <div className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden border border-slate-100 group shadow-2xl">
+            <div
+              onClick={() => setIsLightboxOpen(true)}
+              className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden border border-slate-100 dark:border-border group shadow-2xl cursor-pointer"
+            >
               <Image
-                src={listing.image}
+                src={images[currentImageIndex]}
                 alt={listing.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+
+              {/* Slider Indicator */}
+              <div className="absolute top-8 left-8 bg-black/60 text-white backdrop-blur-md px-4 py-2 rounded-xl font-bold text-xs tracking-wider z-10 border border-white/10">
+                {currentImageIndex + 1} / {images.length}
+              </div>
 
               <div className="absolute top-8 right-8 flex gap-2">
                 <span
@@ -163,22 +257,46 @@ export default function ListingDetails({
                 </span>
               </div>
 
+              {/* Slider Next/Prev Arrows */}
+              <div className="absolute inset-y-0 left-4 right-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none">
+                <button
+                  onClick={handleNextImage}
+                  className="w-12 h-12 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-xl backdrop-blur-md border border-white/10 hover:scale-110 transition-all pointer-events-auto shadow-md"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={handlePrevImage}
+                  className="w-12 h-12 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-xl backdrop-blur-md border border-white/10 hover:scale-110 transition-all pointer-events-auto shadow-md"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+
               <div className="absolute bottom-8 right-8 flex gap-3">
-                <button className="bg-white/40 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-slate-900 hover:bg-white/60 transition-all">
+                <button className="bg-white/40 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-slate-900 hover:bg-white/60 transition-all shadow-lg">
                   <Camera size={24} />
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-6">
-              {[listing.image, listing.image, listing.image].map((img, i) => (
-                <div
-                  key={i}
-                  className="relative h-32 rounded-[2rem] overflow-hidden border border-white/10 opacity-60 hover:opacity-100 transition-all cursor-pointer hover:scale-105"
-                >
-                  <Image src={img} alt="" fill className="object-cover" />
-                </div>
-              ))}
+              {images.map((img, i) => {
+                const isActive = i === currentImageIndex;
+                return (
+                  <div
+                    key={i}
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`relative h-28 md:h-32 rounded-[2rem] overflow-hidden border transition-all cursor-pointer hover:scale-105 ${
+                      isActive
+                        ? "border-primary dark:border-primary border-2 opacity-100 shadow-md scale-102"
+                        : "border-slate-200 dark:border-border opacity-50 hover:opacity-100"
+                    }`}
+                  >
+                    <Image src={img} alt="" fill className="object-cover" />
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
@@ -215,9 +333,16 @@ export default function ListingDetails({
               <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 leading-tight">
                 {listing.title}
               </h1>
-              <div className="flex items-center gap-2 text-slate-500 bg-white self-start px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
-                <MapPin size={20} className="text-primary" />
-                <span className="font-bold text-sm">{listing.location}</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 text-slate-500 bg-white dark:bg-slate-900/50 self-start px-4 py-2 rounded-xl border border-slate-200 dark:border-border shadow-sm">
+                  <MapPin size={20} className="text-primary" />
+                  <span className="font-bold text-sm">{listing.location}</span>
+                </div>
+                {listing.nearbyCollege && (
+                  <div className="flex items-center gap-2 text-slate-500 bg-white dark:bg-slate-900/50 self-start px-4 py-2 rounded-xl border border-slate-200 dark:border-border shadow-sm">
+                    <span className="font-bold text-sm">{getProximityText(listing.nearbyCollege)}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -356,6 +481,7 @@ export default function ListingDetails({
               <div className="grid sm:grid-cols-2 gap-6 relative z-10">
                 <a
                   href={`tel:${listing.ownerPhone}`}
+                  onClick={handleContactClick}
                   className="w-full flex items-center justify-center gap-4 py-5 bg-white text-primary rounded-[1.5rem] font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                 >
                   <Phone size={28} />
@@ -365,6 +491,7 @@ export default function ListingDetails({
                   href={`https://wa.me/${listing.ownerPhone.replace(/^0/, "970")}?text=${encodeURIComponent(
                     `مرحباً، أنا مهتم بسكن "${listing.title}" المعلن عنه في منصة سكنو. هل هو متاح حالياً؟`
                   )}`}
+                  onClick={handleContactClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-4 py-5 bg-white/10 border border-white/20 text-white rounded-[1.5rem] font-black text-xl hover:bg-white/20 transition-all"
@@ -426,6 +553,7 @@ export default function ListingDetails({
         <div className="flex gap-2">
           <a
             href={`tel:${listing.ownerPhone}`}
+            onClick={handleContactClick}
             className="px-4 py-3 bg-primary text-white rounded-xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-primary/20"
           >
             <Phone size={16} />
@@ -435,6 +563,7 @@ export default function ListingDetails({
             href={`https://wa.me/${listing.ownerPhone.replace(/^0/, "970")}?text=${encodeURIComponent(
               `مرحباً، أنا مهتم بسكن "${listing.title}" المعلن عنه في منصة سكنو. هل هو متاح حالياً؟`
             )}`}
+            onClick={handleContactClick}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-md shadow-emerald-600/20"

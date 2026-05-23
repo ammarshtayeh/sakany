@@ -2,22 +2,21 @@
 
 import { Listing } from "@/data/mockData";
 import {
-  Building2,
   MapPin,
-  Users,
   ArrowRight,
-  CheckCircle2,
   Wifi,
   Wind,
   ShieldCheck,
   Bed,
   Bath,
   Maximize,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import StarRating from "./StarRating";
+import { useState, useEffect } from "react";
 
 interface ListingCardProps {
   listing: Listing;
@@ -25,6 +24,35 @@ interface ListingCardProps {
 
 export default function ListingCard({ listing }: ListingCardProps) {
   const isStudentesses = listing.category === "studentesses";
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const favs: string[] = JSON.parse(
+        localStorage.getItem("fav_listings") || "[]"
+      );
+      setIsFavorite(favs.includes(listing.id));
+    }
+  }, [listing.id]);
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof window !== "undefined") {
+      const favs: string[] = JSON.parse(
+        localStorage.getItem("fav_listings") || "[]"
+      );
+      let newFavs: string[];
+      if (favs.includes(listing.id)) {
+        newFavs = favs.filter((id) => id !== listing.id);
+        setIsFavorite(false);
+      } else {
+        newFavs = [...favs, listing.id];
+        setIsFavorite(true);
+      }
+      localStorage.setItem("fav_listings", JSON.stringify(newFavs));
+    }
+  };
 
   // Calculate average rating
   const averageRating = listing.reviews?.length
@@ -39,7 +67,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
       viewport={{ once: true }}
       whileHover={{ y: -8, scale: 1.02 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`group bg-white border border-slate-200/60 rounded-[2.5rem] overflow-hidden hover:border-primary/40 transition-all shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-primary/10 ${
+      className={`group bg-white dark:bg-card border border-slate-200/60 dark:border-border rounded-[2.5rem] overflow-hidden hover:border-primary/40 transition-all shadow-xl shadow-slate-200/30 dark:shadow-black/20 hover:shadow-2xl hover:shadow-primary/10 ${
         isStudentesses ? "theme-pink" : ""
       }`}
     >
@@ -68,6 +96,22 @@ export default function ListingCard({ listing }: ListingCardProps) {
             </span>
           </div>
 
+          {/* Favorite button */}
+          <button
+            onClick={toggleFavorite}
+            className={`absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-xl backdrop-blur-md border transition-all duration-300 ${
+              isFavorite
+                ? "bg-red-500/90 border-red-400/50 text-white scale-110"
+                : "bg-white/20 border-white/20 text-white hover:bg-red-500/70 hover:border-red-400/50"
+            }`}
+            aria-label={isFavorite ? "إزالة من المفضلة" : "إضافة للمفضلة"}
+          >
+            <Heart
+              size={16}
+              className={`transition-all duration-300 ${isFavorite ? "fill-current" : ""}`}
+            />
+          </button>
+
           <div className="absolute bottom-4 left-6 right-6 flex justify-between items-end">
             <div className="flex gap-3">
               {listing.features.slice(0, 2).map((feat, i) => (
@@ -89,7 +133,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         </div>
 
         <div className="p-6 md:p-8">
-          <div className="flex items-center gap-2 text-slate-500 text-[10px] md:text-xs font-bold mb-3">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-bold mb-3">
             <MapPin size={14} className="text-primary" />
             <span className="line-clamp-1">{listing.location}</span>
           </div>
@@ -107,14 +151,14 @@ export default function ListingCard({ listing }: ListingCardProps) {
             </div>
           )}
 
-          <h3 className="text-lg md:text-xl font-black text-slate-900 mb-4 line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-foreground mb-4 line-clamp-1 group-hover:text-primary transition-colors">
             {listing.title}
           </h3>
 
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100 dark:border-border">
             <div className="flex gap-3 md:gap-4">
               {listing.beds && (
-                <div className="flex items-center gap-1.5 text-slate-500">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                   <Bed size={14} className="md:w-4 md:h-4 text-primary/50" />
                   <span className="text-xs md:text-sm font-bold">
                     {listing.beds}
@@ -122,7 +166,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
                 </div>
               )}
               {listing.bathrooms && (
-                <div className="flex items-center gap-1.5 text-slate-500">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                   <Bath size={14} className="md:w-4 md:h-4 text-primary/50" />
                   <span className="text-xs md:text-sm font-bold">
                     {listing.bathrooms}
@@ -130,7 +174,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
                 </div>
               )}
               {listing.sqft && (
-                <div className="flex items-center gap-1.5 text-slate-500">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                   <Maximize
                     size={14}
                     className="md:w-4 md:h-4 text-primary/50"
@@ -148,10 +192,10 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
                 السعر الشهري
               </span>
-              <span className="text-xl md:text-2xl font-black text-slate-900">
+              <span className="text-xl md:text-2xl font-black text-slate-900 dark:text-foreground">
                 {listing.price}{" "}
                 <span className="text-xs text-primary font-bold">₪</span>
               </span>
