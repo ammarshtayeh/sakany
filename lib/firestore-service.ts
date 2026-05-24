@@ -16,7 +16,8 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "./firebase";
-import { Listing, mockListings, mockRoommatePosts, RoommatePost, Review, Ad, mockAds, NearbyService, mockNearbyServices } from "@/data/mockData";
+import { Listing, mockListings, mockRoommatePosts, RoommatePost, Review, Ad, mockAds, NearbyService, mockNearbyServices, BusinessRequest } from "@/data/mockData";
+
 
 export const COLLECTION_NAME = "listings";
 export const ROOMMATE_COLLECTION_NAME = "roommates";
@@ -656,3 +657,86 @@ export async function incrementListingContacts(id: string): Promise<void> {
     console.error("Error incrementing contacts in Firestore:", error);
   }
 }
+
+export const BUSINESS_REQUESTS_COLLECTION = "business_requests";
+
+// Submit a new business sponsorship request
+export async function addBusinessRequest(request: Omit<BusinessRequest, "id" | "status" | "createdAt">): Promise<string> {
+  const newId = `br_${Date.now()}`;
+  const fullRequest: BusinessRequest = {
+    ...request,
+    id: newId,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  // Always save locally for instant feedback
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_business_requests");
+    const current = local ? JSON.parse(local) : [];
+    localStorage.setItem("local_business_requests", JSON.stringify([fullRequest, ...current]));
+  }
+
+  if (!db) return newId;
+
+  try {
+    const docRef = await addDoc(collection(db, BUSINESS_REQUESTS_COLLECTION), {
+      ...request,
+      status: "pending",
+      createdAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding business request to Firestore:", error);
+    return newId;
+  }
+}
+
+// Get all business requests (for admin)
+export async function getBusinessRequests(): Promise<BusinessRequest[]> {
+  const getMock = () => {
+    if (typeof window !== "undefined") {
+      const local = localStorage.getItem("local_business_requests");
+      if (local) return JSON.parse(local) as BusinessRequest[];
+    }
+    return [] as BusinessRequest[];
+  };
+
+  if (!db) return getMock();
+
+  try {
+    const q = query(collection(db, BUSINESS_REQUESTS_COLLECTION), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    const results = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as BusinessRequest[];
+    if (results.length > 0) return results;
+    return getMock();
+  } catch (error) {
+    console.error("Error fetching business requests:", error);
+    return getMock();
+  }
+}
+
+// Update business request status
+export async function updateBusinessRequestStatus(id: string, status: "approved" | "rejected"): Promise<void> {
+  if (typeof window !== "undefined") {
+    const local = localStorage.getItem("local_business_requests");
+    if (local) {
+      const current: BusinessRequest[] = JSON.parse(local);
+      const updated = current.map((r) => (r.id === id ? { ...r, status } : r));
+      localStorage.setItem("local_business_requests", JSON.stringify(updated));
+    }
+  }
+
+  if (!db) return;
+
+  try {
+    const ref = doc(db, BUSINESS_REQUESTS_COLLECTION, id);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await updateDoc(ref, { status, updatedAt: Timestamp.now() });
+    }
+  } catch (error) {
+    console.error("Error updating business request status:", error);
+  }
+}
+

@@ -28,6 +28,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getNearbyServices } from "@/lib/firestore-service";
+import { NearbyService } from "@/data/mockData";
+import SponsoredCard from "@/components/SponsoredCard";
 import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -54,7 +57,12 @@ export default function ListingDetails({
 }) {
   const { id } = use(params);
   const [listing, setListing] = useState<Listing | null>(null);
+  const [nearbyServices, setNearbyServices] = useState<NearbyService[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Existing listing data effect (assume lines 70-78) – keep unchanged
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -72,6 +80,21 @@ export default function ListingDetails({
       });
       return () => unsubscribe();
     }
+  }, []);
+
+  // Fetch nearby services for "قريب منك" section
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const services = await getNearbyServices();
+        setNearbyServices(services);
+      } catch (e) {
+        console.error("Failed to fetch nearby services", e);
+      } finally {
+        setServicesLoading(false);
+      }
+    }
+    fetchServices();
   }, []);
 
   useEffect(() => {
@@ -540,7 +563,24 @@ export default function ListingDetails({
             </div>
           </div>
         )}
-      </main>
+      <section className="mt-32">
+  <div className="flex justify-between items-end mb-16 px-4">
+    <h2 className="text-4xl font-black text-slate-900 mb-4">قريب منك</h2>
+  </div>
+  {servicesLoading ? (
+    <div className="flex flex-col items-center justify-center py-12">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-slate-400 dark:text-slate-500 font-bold">جاري تحميل الخدمات القريبة...</p>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {nearbyServices.map((service) => (
+        <SponsoredCard key={service.id} service={service} variant="compact" />
+      ))}
+    </div>
+  )}
+</section>
+</main>
 
       {/* Sticky Mobile Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 px-6 py-4 flex items-center justify-between gap-4 md:hidden shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">

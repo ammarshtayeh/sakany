@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import {
-  Store,
-  Utensils,
-  Coffee,
-  ShoppingBag,
-  Sparkles,
-  Phone,
-  ArrowRight,
-  Tag,
-  MessageSquare,
-  Sparkle,
+  Store, Utensils, Coffee, ShoppingBag, Sparkles,
+  Phone, ArrowRight, Tag, MessageSquare, Sparkle,
+  Star, Clock, Crown, Zap, Shield, Gift,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getNearbyServices } from "@/lib/firestore-service";
 import { NearbyService } from "@/data/mockData";
+import Link from "next/link";
+import SponsoredCard from "@/components/SponsoredCard";
 
 const CATEGORIES = [
   { id: "all", name: "الكل", icon: Store },
@@ -31,6 +26,7 @@ export default function NearbyServicesPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [services, setServices] = useState<NearbyService[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showOffersOnly, setShowOffersOnly] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -47,13 +43,24 @@ export default function NearbyServicesPage() {
     fetchData();
   }, []);
 
-  const filteredServices = services.filter((service) => {
-    if (activeCategory === "all") return true;
-    return service.category === activeCategory;
-  });
+  // Sorted & filtered: Premium first → Featured → Basic → No tier
+  const filteredServices = useMemo(() => {
+    const tierOrder = { premium: 0, featured: 1, basic: 2 };
+    let list = services.filter((service) => {
+      if (activeCategory !== "all" && service.category !== activeCategory) return false;
+      if (showOffersOnly && !service.studentOffer) return false;
+      return true;
+    });
+    list.sort((a, b) => {
+      const aOrder = tierOrder[a.sponsorTier as keyof typeof tierOrder] ?? 3;
+      const bOrder = tierOrder[b.sponsorTier as keyof typeof tierOrder] ?? 3;
+      return aOrder - bOrder;
+    });
+    return list;
+  }, [services, activeCategory, showOffersOnly]);
 
   return (
-    <div className="min-h-screen bg-background text-slate-900 flex flex-col font-almarai overflow-x-hidden">
+    <div className="min-h-screen bg-background text-slate-900 dark:text-foreground flex flex-col font-almarai overflow-x-hidden">
       <Navbar />
 
       {/* Decorative Aurora glow */}
@@ -63,22 +70,20 @@ export default function NearbyServicesPage() {
       {/* Hero Section */}
       <main className="flex-1 pt-32 pb-24 px-6 max-w-7xl mx-auto w-full">
         <header className="text-center max-w-3xl mx-auto mb-16">
-
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-5xl md:text-6xl font-black text-slate-900 mb-6 leading-tight"
+            className="text-5xl md:text-6xl font-black text-slate-900 dark:text-foreground mb-6 leading-tight"
           >
-            الخدمات <span className="text-gradient">القريبة والمجاورة</span>
+            الخدمات <span className="bg-gradient-to-l from-primary to-teal-400 bg-clip-text text-transparent">القريبة والمجاورة</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-slate-600 text-lg md:text-xl font-bold leading-relaxed"
+            className="text-slate-600 dark:text-slate-400 text-lg md:text-xl font-bold leading-relaxed"
           >
             وفرنا لك دليلاً متكاملاً لأفضل المطاعم، المقاهي، السوبرماركت ومغاسل
             الملابس المجاورة لجامعة النجاح وسكنك، مع عروض وخصومات حصرية خاصة
@@ -86,9 +91,9 @@ export default function NearbyServicesPage() {
           </motion.p>
         </header>
 
-        {/* Category Tabs */}
-        <section className="mb-12 flex justify-center overflow-x-auto pb-4 scrollbar-thin">
-          <div className="flex bg-white/60 border border-slate-200/80 p-2 rounded-3xl backdrop-blur-md gap-2 shadow-sm shrink-0">
+        {/* Category Tabs + Offers Filter */}
+        <section className="mb-12 flex flex-col items-center gap-4">
+          <div className="flex bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 p-2 rounded-3xl backdrop-blur-md gap-2 shadow-sm shrink-0 overflow-x-auto pb-2 scrollbar-thin">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isSelected = activeCategory === cat.id;
@@ -96,10 +101,10 @@ export default function NearbyServicesPage() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-sm transition-all duration-300 relative ${
+                  className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-sm transition-all duration-300 whitespace-nowrap ${
                     isSelected
                       ? "bg-primary text-white shadow-xl shadow-primary/20"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   <Icon size={18} />
@@ -108,89 +113,41 @@ export default function NearbyServicesPage() {
               );
             })}
           </div>
+
+          {/* Offers only toggle */}
+          <button
+            onClick={() => setShowOffersOnly(!showOffersOnly)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black border transition-all ${
+              showOffersOnly
+                ? "bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400"
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-amber-300 hover:text-amber-600"
+            }`}
+          >
+            <Gift size={16} />
+            عروض الطلاب فقط
+          </button>
         </section>
 
         {/* Services Listings */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-400 font-bold">جاري تحميل الخدمات القريبة...</p>
+            <p className="text-slate-400 dark:text-slate-500 font-bold">جاري تحميل الخدمات القريبة...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
               {filteredServices.map((service, index) => (
-                <motion.article
+                <motion.div
                   key={service.id}
+                  layout
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -30 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                  className="bg-white border border-slate-200/80 rounded-[2.5rem] overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary/30 transition-all duration-500 group flex flex-col justify-between"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: index * 0.04 }}
                 >
-                  {/* Business Image */}
-                  <div className="relative h-56 w-full overflow-hidden bg-slate-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={service.image}
-                      alt={service.name}
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {/* Discount badge */}
-                    {service.discount && (
-                      <div className="absolute top-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg shadow-orange-500/20 border border-orange-400/20">
-                        <Tag size={12} />
-                        <span>{service.discount}</span>
-                      </div>
-                    )}
-                    {/* Category label */}
-                    <div className="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur-md text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider">
-                      {CATEGORIES.find((c) => c.id === service.category)?.name ||
-                        "خدمة"}
-                    </div>
-                  </div>
-
-                  {/* Business Content */}
-                  <div className="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-2xl font-black text-slate-950 mb-3 group-hover:text-primary transition-colors">
-                        {service.name}
-                      </h3>
-                      <p className="text-slate-400 text-xs font-bold mb-4">
-                        📍 {service.address}
-                      </p>
-                      <p className="text-slate-600 font-bold leading-relaxed text-sm mb-6 line-clamp-3">
-                        {service.description}
-                      </p>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex gap-4 pt-4 border-t border-slate-50">
-                      {service.whatsapp && (
-                        <a
-                          href={`https://wa.me/${service.whatsapp}?text=${encodeURIComponent(
-                            `مرحبا ${service.name}، أنا طالب من منصة سكنو وأود الاستفسار عن عروضكم.`
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex-1 py-4 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-2xl text-xs font-black hover:bg-emerald-500 hover:text-white transition-all text-center flex items-center justify-center gap-2 shadow-sm"
-                        >
-                          <MessageSquare size={16} />
-                          واتساب
-                        </a>
-                      )}
-                      {service.phone && (
-                        <a
-                          href={`tel:${service.phone}`}
-                          className="flex-1 py-4 bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl text-xs font-black hover:bg-slate-900 hover:text-white transition-all text-center flex items-center justify-center gap-2 shadow-sm"
-                        >
-                          <Phone size={16} />
-                          اتصال
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </motion.article>
+                  <SponsoredCard service={service} variant="full" />
+                </motion.div>
               ))}
             </AnimatePresence>
 
@@ -236,17 +193,13 @@ export default function NearbyServicesPage() {
           </div>
 
           <div className="shrink-0 z-10 w-full md:w-auto">
-            <a
-              href={`https://wa.me/972595537190?text=${encodeURIComponent(
-                "مرحبا سكنو، أود الإعلان في صفحة الخدمات القريبة وعرض محلي التجاري للطلاب."
-              )}`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-full md:w-auto inline-flex items-center justify-center gap-3 bg-premium-gradient text-white px-10 py-6 rounded-[2rem] font-black text-xl hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl shadow-primary/30"
+            <Link
+              href="/advertise"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-l from-primary to-teal-500 text-white px-10 py-6 rounded-[2rem] font-black text-xl hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl shadow-primary/30"
             >
               ابدأ الإعلان معنا الآن
               <ArrowRight size={24} className="rotate-180" />
-            </a>
+            </Link>
           </div>
         </motion.section>
       </main>

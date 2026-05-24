@@ -434,6 +434,32 @@ export interface NearbyService {
   isActive: boolean;
   lat?: number | null;
   lng?: number | null;
+  // Sponsorship fields
+  sponsorTier?: "basic" | "featured" | "premium";
+  logoUrl?: string;
+  openHours?: string;
+  rating?: number;
+  reviewCount?: number;
+  studentOffer?: string;
+  tags?: string[];
+  instagramUrl?: string;
+  mapUrl?: string;
+  clicksCount?: number;
+}
+
+export interface BusinessRequest {
+  id?: string;
+  businessName: string;
+  category: string;
+  ownerName: string;
+  phone: string;
+  whatsapp?: string;
+  address: string;
+  selectedTier: "basic" | "featured" | "premium";
+  studentOffer?: string;
+  message?: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt?: string;
 }
 
 export const mockNearbyServices: NearbyService[] = [
@@ -447,9 +473,15 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970599123456",
     address: "رفيديا - الشارع الرئيسي - مقابل المستشفى العربي",
     discount: "خصم 15% لحاملي بطاقة جامعة النجاح",
+    studentOffer: "خصم 15% بذكر سكنو",
     isActive: true,
     lat: 32.2265,
     lng: 35.2215,
+    sponsorTier: "premium",
+    rating: 4.8,
+    reviewCount: 142,
+    openHours: "10:00 ص - 12:00 م",
+    tags: ["توصيل", "وجبات سريعة", "برجر"],
   },
   {
     id: "ns2",
@@ -461,9 +493,15 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970598765432",
     address: "شارع الأكاديمية - بجانب الحرم الجديد لجامعة النجاح",
     discount: "مشروب مجاني مع كل 3 ساعات دراسة",
+    studentOffer: "مشروب مجاني مع 3 ساعات دراسة",
     isActive: true,
     lat: 32.2285,
     lng: 35.2240,
+    sponsorTier: "featured",
+    rating: 4.6,
+    reviewCount: 89,
+    openHours: "8:00 ص - 11:00 م",
+    tags: ["واي فاي", "جلسات دراسة", "قهوة"],
   },
   {
     id: "ns3",
@@ -475,9 +513,15 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970597111222",
     address: "المخفية - الدوار الرئيسي",
     discount: "توصيل مجاني بالكامل لكافة سكنات الطلاب",
+    studentOffer: "توصيل مجاني للطلاب",
     isActive: true,
     lat: 32.2245,
     lng: 35.2255,
+    sponsorTier: "featured",
+    rating: 4.4,
+    reviewCount: 67,
+    openHours: "7:00 ص - 10:00 م",
+    tags: ["توصيل مجاني", "مواد غذائية", "مستلزمات"],
   },
   {
     id: "ns4",
@@ -489,9 +533,55 @@ export const mockNearbyServices: NearbyService[] = [
     whatsapp: "970595333444",
     address: "شارع تونس - قرب سكنات الطلاب",
     discount: "كوي مجاني لقطعتين عند غسيل أكثر من 5 كغم",
+    studentOffer: "كوي مجاني مع كل غسلة",
     isActive: true,
     lat: 32.2255,
     lng: 35.2205,
-  }
+    sponsorTier: "basic",
+    rating: 4.2,
+    reviewCount: 34,
+    openHours: "8:00 ص - 8:00 م",
+    tags: ["استلام من السكن", "24 ساعة"],
+  },
+  {
+    id: "ns5",
+    name: "مطعم شاورما الشام",
+    category: "restaurant",
+    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&q=80&w=800",
+    description: "أصالة الشاورما السورية الحقيقية في قلب نابلس. لحوم طازجة يومياً، خبز طازج، وصلصات بيتية لا مثيل لها. الطالب بضيافتنا دائماً.",
+    phone: "0594555666",
+    whatsapp: "970594555666",
+    address: "شارع تونس - بجانب دوار رفيديا",
+    discount: "ساندويش مجاني مع كل 5 زيارات",
+    studentOffer: "ساندويش هدية مع كل 5 زيارات",
+    isActive: true,
+    lat: 32.2270,
+    lng: 35.2195,
+    sponsorTier: "premium",
+    rating: 4.9,
+    reviewCount: 213,
+    openHours: "11:00 ص - 2:00 ص",
+    tags: ["شاورما", "توصيل", "24 ساعة"],
+  },
+  {
+    id: "ns6",
+    name: "صيدلية الصحة الطلابية",
+    category: "other",
+    image: "https://images.unsplash.com/photo-1576602976047-174e57a47881?auto=format&fit=crop&q=80&w=800",
+    description: "صيدلية متخصصة بالقرب من الحرم الجامعي. نوفر جميع الأدوية والمستلزمات الطبية مع استشارة صيدلانية مجانية لجميع الطلاب.",
+    phone: "0593777888",
+    whatsapp: "970593777888",
+    address: "الحرم الجديد - مقابل البوابة الرئيسية",
+    discount: "استشارة صيدلانية مجانية",
+    studentOffer: "استشارة مجانية + خصم 10% على المستلزمات",
+    isActive: true,
+    lat: 32.2290,
+    lng: 35.2250,
+    sponsorTier: "basic",
+    rating: 4.5,
+    reviewCount: 58,
+    openHours: "8:00 ص - 9:00 م",
+    tags: ["صيدلية", "استشارة مجانية", "طوارئ"],
+  },
 ];
 

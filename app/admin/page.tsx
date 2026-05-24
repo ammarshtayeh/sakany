@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Listing, Ad, NearbyService } from "@/data/mockData";
+import { Listing, Ad, NearbyService, BusinessRequest } from "@/data/mockData";
 import {
   getPendingListings,
   getListings,
@@ -15,6 +15,8 @@ import {
   addNearbyService,
   updateNearbyService,
   deleteNearbyService,
+  getBusinessRequests,
+  updateBusinessRequestStatus,
 } from "@/lib/firestore-service";
 import {
   Building2,
@@ -39,6 +41,13 @@ import {
   Menu,
   Megaphone,
   Store,
+  Briefcase,
+  Crown,
+  Phone,
+  Mail,
+  ExternalLink,
+  Star,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -75,6 +84,10 @@ export default function AdminDashboard() {
   const [nsDiscount, setNsDiscount] = useState("");
   const [isNsSubmitting, setIsNsSubmitting] = useState(false);
 
+  // Business Requests state
+  const [businessRequests, setBusinessRequests] = useState<BusinessRequest[]>([]);
+  const [isLoadingBizRequests, setIsLoadingBizRequests] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -100,6 +113,13 @@ export default function AdminDashboard() {
         icon: Clock,
         color: "text-amber-600",
         bg: "bg-amber-500/10",
+      },
+      {
+        label: "طلبات الأعمال",
+        value: businessRequests.filter((r) => r.status === "pending").length,
+        icon: Briefcase,
+        color: "text-violet-600",
+        bg: "bg-violet-500/10",
       },
     ],
     [listings],
@@ -166,10 +186,13 @@ export default function AdminDashboard() {
         console.log("Ads fetched:", adsList.length);
         const nearbyList = await getAllNearbyServices();
         console.log("Nearby services fetched:", nearbyList.length);
+        const bizRequests = await getBusinessRequests();
+        console.log("Business requests fetched:", bizRequests.length);
 
         setListings([...approved, ...pending]);
         setAds(adsList);
         setNearbyServices(nearbyList);
+        setBusinessRequests(bizRequests);
       } catch (error) {
         alert(
           "فشل تحميل البيانات. تأكد من اتصال الإنترنت أو إعدادات الفاير بيس (index missing).",
@@ -386,6 +409,51 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApproveBizRequest = async (id: string) => {
+    const req = businessRequests.find((r) => r.id === id);
+    if (!req) return;
+
+    try {
+      await updateBusinessRequestStatus(id, "approved");
+
+      await addNearbyService({
+        name: req.businessName,
+        category: req.category,
+        image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&q=80&w=800",
+        description: req.message || `شريك معتمد في منصة سكنو بصفة ${req.selectedTier === "premium" ? "راعي ذهبي" : req.selectedTier === "featured" ? "شريك مميز" : "شريك أساسي"}`,
+        phone: req.phone,
+        whatsapp: req.whatsapp || req.phone,
+        address: req.address,
+        studentOffer: req.studentOffer,
+        discount: req.studentOffer || "خصم خاص لطلاب جامعة النجاح",
+        isActive: true,
+        sponsorTier: req.selectedTier,
+        clicksCount: 0
+      });
+
+      setBusinessRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: "approved" } : r))
+      );
+
+      const updatedServices = await getAllNearbyServices();
+      setNearbyServices(updatedServices);
+
+      alert(`✅ تم قبول طلب الإعلان بنجاح وإضافة المحل "${req.businessName}" كشريك راعٍ في المنصة!`);
+    } catch (err) {
+      console.error("Error approving request:", err);
+      alert("حدث خطأ أثناء قبول الطلب.");
+    }
+  };
+
+  const handleRejectBizRequest = async (id: string) => {
+    if (confirm("هل أنت متأكد من رفض هذا الطلب؟")) {
+      await updateBusinessRequestStatus(id, "rejected");
+      setBusinessRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: "rejected" } : r))
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-slate-900 font-almarai">
@@ -586,6 +654,12 @@ export default function AdminDashboard() {
                   { id: "listings", label: "إدارة الوحدات", icon: HomeIcon },
                   { id: "ads", label: "إدارة الإعلانات", icon: Megaphone },
                   { id: "nearby", label: "الخدمات القريبة", icon: Store },
+                  {
+                    id: "business",
+                    label: "طلبات الأعمال",
+                    icon: Briefcase,
+                    count: businessRequests.filter((r) => r.status === "pending").length,
+                  },
                   { id: "settings", label: "إعدادات النظام", icon: Settings },
                 ].map((item) => (
                   <button
@@ -652,6 +726,12 @@ export default function AdminDashboard() {
             { id: "listings", label: "إدارة الوحدات", icon: HomeIcon },
             { id: "ads", label: "إدارة الإعلانات", icon: Megaphone },
             { id: "nearby", label: "الخدمات القريبة", icon: Store },
+            {
+              id: "business",
+              label: "طلبات الأعمال",
+              icon: Briefcase,
+              count: businessRequests.filter((r) => r.status === "pending").length,
+            },
             { id: "settings", label: "إعدادات النظام", icon: Settings },
           ].map((item) => (
             <button
@@ -1253,8 +1333,186 @@ export default function AdminDashboard() {
               </div>
             </motion.div>
           )}
+
+          {/* Business Requests Tab */}
+          {activeTab === "business" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="animate-in fade-in duration-700"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
+                <div>
+                  <h2 className="text-4xl font-black text-slate-900">
+                    طلبات <span className="text-primary">الإعلان والرعاية</span>
+                  </h2>
+                  <p className="text-slate-500 font-bold mt-2">المحلات والمطاعم التي تقدمت للإعلان في المنصة</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="px-5 py-2.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl text-sm font-black">
+                    {businessRequests.filter((r) => r.status === "pending").length} طلب جديد
+                  </div>
+                  <div className="px-5 py-2.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-xl text-sm font-black">
+                    {businessRequests.filter((r) => r.status === "approved").length} مقبول
+                  </div>
+                </div>
+              </div>
+
+              {businessRequests.length === 0 ? (
+                <div className="py-24 text-center opacity-30 flex flex-col items-center">
+                  <Briefcase size={64} className="mb-4 text-primary" />
+                  <p className="text-2xl font-black">لا توجد طلبات أعمال حالياً</p>
+                  <p className="text-slate-400 font-bold mt-2">عندما تتقدم محلات للإعلان ستظهر هنا</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {businessRequests.map((req) => {
+                    const categoryNames: Record<string, string> = {
+                      restaurant: "مطعم",
+                      cafe: "مقهى",
+                      supermarket: "سوبرماركت",
+                      laundry: "مغسلة",
+                      other: "خدمة أخرى"
+                    };
+                    return (
+                      <div
+                        key={req.id}
+                        className={`bg-white border rounded-[2.5rem] p-8 shadow-sm transition-all hover:shadow-md ${
+                          req.status === "pending"
+                            ? "border-amber-200 hover:border-amber-300"
+                            : req.status === "approved"
+                            ? "border-emerald-200"
+                            : "border-slate-200 opacity-60"
+                        }`}
+                      >
+                        <div className="flex flex-col lg:flex-row gap-8">
+                          {/* Business Info */}
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                  <Store size={28} className="text-primary" />
+                                </div>
+                                <div>
+                                  <h3 className="text-xl font-black text-slate-900">{req.businessName}</h3>
+                                  <p className="text-slate-500 font-bold text-sm">
+                                    {categoryNames[req.category] || req.category || "محل تجاري"}
+                                  </p>
+                                </div>
+                              </div>
+                              <span
+                                className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest ${
+                                  req.status === "pending"
+                                    ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                    : req.status === "approved"
+                                    ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                                    : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+                                }`}
+                              >
+                                {req.status === "pending" ? "⏳ قيد المراجعة" : req.status === "approved" ? "✅ مقبول" : "❌ مرفوض"}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                              <div className="bg-slate-50 rounded-2xl p-4">
+                                <p className="text-xs text-slate-400 font-black uppercase tracking-widest mb-1">الباقة المطلوبة</p>
+                                <div className="flex items-center gap-2">
+                                  <Crown size={16} className={req.selectedTier === "premium" ? "text-yellow-500" : req.selectedTier === "featured" ? "text-primary" : "text-slate-400"} />
+                                  <p className="font-black text-slate-900">
+                                    {req.selectedTier === "premium" ? "🥇 بريميوم" : req.selectedTier === "featured" ? "⭐ مميز" : "🔹 أساسي"}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="bg-slate-50 rounded-2xl p-4">
+                                <p className="text-xs text-slate-400 font-black uppercase tracking-widest mb-1">صاحب العمل</p>
+                                <p className="font-black text-slate-900">{req.ownerName || "غير محدد"}</p>
+                              </div>
+                              {req.phone && (
+                                <div className="bg-slate-50 rounded-2xl p-4">
+                                  <p className="text-xs text-slate-400 font-black uppercase tracking-widest mb-1">الاتصال والتواصل</p>
+                                  <div className="flex flex-col gap-1.5">
+                                    <a href={`tel:${req.phone}`} className="font-black text-slate-900 hover:text-primary transition-colors flex items-center gap-2 text-sm">
+                                      <Phone size={14} />
+                                      {req.phone}
+                                    </a>
+                                    {req.whatsapp && (
+                                      <a href={`https://wa.me/${req.whatsapp.replace(/\+/g, '')}`} target="_blank" rel="noreferrer" className="font-black text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-2 text-sm">
+                                        <MessageSquare size={14} />
+                                        واتساب ({req.whatsapp})
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                              <div className="bg-slate-50 rounded-2xl p-4">
+                                <p className="text-xs text-slate-400 font-black uppercase tracking-widest mb-1">العنوان</p>
+                                <p className="font-bold text-slate-800 text-sm">{req.address}</p>
+                              </div>
+                              {req.studentOffer && (
+                                <div className="bg-slate-50 rounded-2xl p-4 border border-teal-100 bg-teal-50/30">
+                                  <p className="text-xs text-teal-600 font-black uppercase tracking-widest mb-1">العرض للطلاب 🎁</p>
+                                  <p className="font-bold text-teal-800 text-sm">{req.studentOffer}</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {req.message && (
+                              <div className="bg-slate-50 rounded-2xl p-4 mb-4">
+                                <p className="text-xs text-slate-400 font-black uppercase tracking-widest mb-2">رسالة صاحب العمل</p>
+                                <p className="text-slate-700 font-bold text-sm leading-relaxed">{req.message}</p>
+                              </div>
+                            )}
+
+                            <p className="text-xs text-slate-400 font-bold">
+                              تاريخ الطلب: {new Date(typeof req.createdAt === "string" ? req.createdAt : Date.now()).toLocaleDateString("ar-PS")}
+                            </p>
+                          </div>
+
+                          {/* Actions */}
+                          {req.status === "pending" && (
+                            <div className="flex lg:flex-col gap-3 lg:w-44 justify-center">
+                              <button
+                                onClick={() => handleApproveBizRequest(req.id || "")}
+                                className="flex-1 lg:flex-none bg-emerald-500 text-white px-6 py-4 rounded-2xl font-black text-sm transition-all hover:scale-105 shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2"
+                              >
+                                <CheckCircle2 size={18} />
+                                قبول الطلب
+                              </button>
+                              <button
+                                onClick={() => handleRejectBizRequest(req.id || "")}
+                                className="flex-1 lg:flex-none bg-slate-50 text-red-600 border border-red-200 px-6 py-4 rounded-2xl font-black text-sm transition-all hover:bg-red-50 flex items-center justify-center gap-2"
+                              >
+                                <XCircle size={18} />
+                                رفض
+                              </button>
+                              {req.phone && (
+                                <a
+                                  href={`https://wa.me/${req.phone.replace(/^0/, "970")}?text=${encodeURIComponent(`مرحباً ${req.businessName}، بخصوص طلب الإعلان في منصة سكنو...`)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-1 lg:flex-none bg-emerald-600/10 text-emerald-700 border border-emerald-200 px-6 py-4 rounded-2xl font-black text-sm transition-all hover:bg-emerald-50 flex items-center justify-center gap-2"
+                                >
+                                  <ExternalLink size={16} />
+                                  واتساب
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          )}
+
         </div>
       </main>
+
 
       <AnimatePresence>
         {isAddAdModalOpen && (

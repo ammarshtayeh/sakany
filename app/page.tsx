@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
+import PartnersStrip from "@/components/PartnersStrip";
 import { mockListings, Ad } from "@/data/mockData";
 import ListingCard from "@/components/ListingCard";
 import OwnerActionModal from "@/components/OwnerActionModal";
@@ -675,6 +676,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Partners Strip */}
+      <PartnersStrip />
 
       {/* Footer */}
       <footer className="bg-white py-24 border-t border-slate-200">
