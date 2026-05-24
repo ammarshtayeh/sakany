@@ -421,10 +421,12 @@ export const mockRoommatePosts: RoommatePost[] = [
   },
 ];
 
+export type NearbyServiceCategory = "restaurant" | "cafe" | "supermarket" | "laundry" | "other";
+
 export interface NearbyService {
   id: string;
   name: string;
-  category: "restaurant" | "cafe" | "supermarket" | "laundry" | "other";
+  category: NearbyServiceCategory;
   image: string;
   description: string;
   phone?: string;
@@ -450,7 +452,7 @@ export interface NearbyService {
 export interface BusinessRequest {
   id?: string;
   businessName: string;
-  category: string;
+  category: NearbyServiceCategory;
   ownerName: string;
   phone: string;
   whatsapp?: string;

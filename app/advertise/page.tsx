@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { addBusinessRequest } from "@/lib/firestore-service";
+import type { NearbyServiceCategory } from "@/data/mockData";
 
 const TIERS = [
   {
@@ -100,7 +101,7 @@ export default function AdvertisePage() {
 
   // Form fields
   const [businessName, setBusinessName] = useState("");
-  const [category, setCategory] = useState("restaurant");
+  const [category, setCategory] = useState<NearbyServiceCategory>("restaurant");
   const [ownerName, setOwnerName] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -495,7 +496,7 @@ export default function AdvertisePage() {
                       <label className="text-xs font-black text-slate-500 uppercase tracking-widest">النوع *</label>
                       <select
                         value={category}
-                        onChange={(e) => setCategory(e.target.value)}
+                        onChange={(e) => setCategory(e.target.value as NearbyServiceCategory)}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-right font-bold text-slate-900 dark:text-foreground focus:border-primary outline-none text-sm"
                       >
                         <option value="restaurant">مطعم</option>

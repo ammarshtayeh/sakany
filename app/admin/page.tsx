@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Listing, Ad, NearbyService, BusinessRequest } from "@/data/mockData";
+import type { Listing, Ad, NearbyService, BusinessRequest, NearbyServiceCategory } from "@/data/mockData";
 import {
   getPendingListings,
   getListings,
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
 
   // Nearby services form states
   const [nsName, setNsName] = useState("");
-  const [nsCategory, setNsCategory] = useState<"restaurant" | "cafe" | "supermarket" | "laundry" | "other">("restaurant");
+  const [nsCategory, setNsCategory] = useState<NearbyServiceCategory>("restaurant");
   const [nsImage, setNsImage] = useState("");
   const [nsDescription, setNsDescription] = useState("");
   const [nsPhone, setNsPhone] = useState("");
@@ -1650,7 +1650,7 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-black text-slate-700 mb-2">التصنيف *</label>
                     <select
                       value={nsCategory}
-                      onChange={(e) => setNsCategory(e.target.value as any)}
+                      onChange={(e) => setNsCategory(e.target.value as NearbyServiceCategory)}
                       className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
                     >
                       <option value="restaurant">مطعم</option>
@@ -1812,7 +1812,7 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-black text-slate-700 mb-2">التصنيف *</label>
                     <select
                       value={nsCategory}
-                      onChange={(e) => setNsCategory(e.target.value as any)}
+                      onChange={(e) => setNsCategory(e.target.value as NearbyServiceCategory)}
                       className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-white focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-bold text-slate-950"
                     >
                       <option value="restaurant">مطعم</option>
